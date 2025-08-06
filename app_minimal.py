@@ -16,7 +16,7 @@ from config import UPLOAD_CONFIG, SYSTEM_CONFIG, DATA_SOURCES
 from shared_db import shared_db
 from simple_data_collector import SimpleDataCollector
 from fallback_storage import fallback_storage
-from client_ai_engine import client_ai
+from local_ai_engine import local_ai
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -164,8 +164,7 @@ class AutoTrainer:
                 time.sleep(5)
                 logger.info(f"Training progress: {(i+1)*20}%")
             
-            # Update client-side AI knowledge
-            client_ai.update_knowledge(writeups)
+            # Update local AI knowledge (handled automatically by model loading)
             
             # Save model metadata to database or fallback
             config_data = json.dumps({
@@ -225,12 +224,11 @@ def load_active_model():
             
         logger.info(f"Loading model: {model_data['name']} v{model_data['version']}")
         
-        # Load knowledge into client-side AI
-        client_ai.update_knowledge(writeups)
+        # Load model into local AI engine  
+        success = local_ai.load_model()
         
-        # Load model configuration
-        if model_data:
-            client_ai.load_model_from_server(model_data)
+        if not success:
+            logger.warning("Failed to load local AI model, will attempt auto-download")
         
         model_loaded = True
         logger.info("Mock model loaded successfully")
@@ -268,7 +266,7 @@ def get_status():
         'auto_training_enabled': True,
         'last_training': last_training_check.isoformat(),
         'context_window': 4096,
-        'model_type': client_ai.model_type,
+        'model_type': 'Local AI Engine',
         'storage_mode': 'fallback' if use_fallback_storage else 'database'
     })
 
@@ -287,8 +285,8 @@ def chat():
         
         start_time = time.time()
         
-        # Generate response using client-side AI
-        response = client_ai.generate_ctf_response(question)
+        # Generate response using local AI
+        response = local_ai.generate_response(question)
         
         response_time = time.time() - start_time
         
@@ -305,8 +303,8 @@ def chat():
         return jsonify({
             'response': response,
             'response_time': response_time,
-            'model_type': client_ai.model_type,
-            'context_window': client_ai.context_window
+            'model_type': local_ai.current_model_id or 'Local AI Engine',
+            'context_window': local_ai.context_window
         })
         
     except Exception as e:
@@ -351,10 +349,7 @@ def upload_file():
                 category='imported',
                 difficulty='unknown'
             )
-            # Update client-side AI knowledge if loaded
-            if model_loaded:
-                writeups = fallback_storage.get_writeups(limit=100)
-                client_ai.update_knowledge(writeups)
+            # Update local AI knowledge handled automatically
         else:
             writeup_id = shared_db.save_writeup(
                 title=title,
@@ -363,10 +358,7 @@ def upload_file():
                 category='imported',
                 difficulty='unknown'
             )
-            # Update client-side AI knowledge if loaded
-            if model_loaded:
-                writeups = shared_db.get_writeups(limit=100)
-                client_ai.update_knowledge(writeups)
+            # Update local AI knowledge handled automatically
         
         # Clean up file
         os.remove(filepath)
@@ -418,13 +410,7 @@ def collect_data():
                 if writeup_id:
                     results.append(writeup_id)
         
-        # Update client-side AI knowledge if loaded
-        if model_loaded and results:
-            if use_fallback_storage:
-                writeups = fallback_storage.get_writeups(limit=100)
-            else:
-                writeups = shared_db.get_writeups(limit=100)
-            client_ai.update_knowledge(writeups)
+        # Local AI knowledge is updated automatically when new data is saved
         
         return jsonify({
             'success': True,
@@ -547,8 +533,29 @@ if __name__ == '__main__':
     bg_thread.daemon = True
     bg_thread.start()
     
-    logger.info("Starting CTF AI System with Client-Side AI...")
-    logger.info(f"Using {client_ai.model_type} with {client_ai.context_window} token context window")
+    # Initialize local AI system
+    logger.info("Starting CTF AI System with Local AI...")
+    
+    # Try to auto-download and load a model
+    available_models = local_ai.get_available_models()
+    downloaded_models = [mid for mid, info in available_models.items() if info['downloaded']]
+    
+    if downloaded_models:
+        logger.info(f"Found downloaded model: {downloaded_models[0]}")
+        local_ai.load_model(downloaded_models[0])
+    else:
+        logger.info("No models found locally, attempting auto-download...")
+        def progress_callback(message):
+            logger.info(f"Model download: {message}")
+        
+        downloaded_model = local_ai.auto_download_best_model(progress_callback)
+        if downloaded_model:
+            local_ai.load_model(downloaded_model)
+            logger.info(f"Successfully downloaded and loaded {downloaded_model}")
+        else:
+            logger.info("Using mock responses with real CTF knowledge")
+    
+    logger.info(f"Local AI Engine ready with {local_ai.context_window} token context window")
     logger.info(f"Storage mode: {'Fallback JSON' if use_fallback_storage else 'Database'}")
     
     app.run(

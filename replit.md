@@ -3,12 +3,12 @@
 CTF AI is a Flask-based cybersecurity assistant designed to help with Capture The Flag (CTF) competitions. The system collects cybersecurity writeups from various sources, automatically trains AI models using collected data, and provides an interactive chat interface for cybersecurity queries. It features server-side model storage allowing all users to access fine-tuned models, while maintaining a lightweight deployment approach. The system specializes in web security, cryptography, binary exploitation, reverse engineering, forensics, and other CTF categories.
 
 ## Recent Changes (August 2025)
-- ✅ **Implemented client-side AI execution** - Real AI processing runs locally after automatic model import from shared database
+- ✅ **Implemented LOCAL AI ENGINE** - Real AI models automatically download and run on user's machine
+- ✅ **Added automatic model downloading** - System downloads DistilGPT-2, DialoGPT-Small, or GPT-2 models locally
 - ✅ **Built CTF-specialized knowledge engine** - Advanced reasoning system with category detection and technique-specific guidance
 - ✅ **Added comprehensive CTF knowledge base** - Built-in database of techniques, tools, and methodologies for all CTF categories
-- ✅ **Created intelligent response generation** - Context-aware responses using writeup analysis and pattern matching
-- ✅ **Simplified to single shared database** - Removed multi-user database complexity, uses one shared database for all users
-- ✅ **Added automatic server-side training** - System automatically trains the shared model daily using collected writeups
+- ✅ **Created intelligent response generation** - Context-aware responses using real AI models with CTF knowledge
+- ✅ **Implemented model management system** - Download status, model switching, and automatic fallback to mock responses
 - ✅ **Built fallback storage system** - JSON-based storage when external database is unavailable with seamless switching
 - ✅ **Added file import functionality** - Users can upload TXT, MD, PDF, JSON files to add training data
 - ✅ **Streamlined user interface** - Clean 4-tab interface: Chat, Upload, Data Collection, Auto Training

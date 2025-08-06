@@ -1,0 +1,12 @@
+{
+  "model_type": "gpt2",
+  "vocab_size": 50257,
+  "n_positions": 1024,
+  "n_ctx": 1024,
+  "n_embd": 768,
+  "n_layer": 12,
+  "n_head": 12,
+  "downloaded_from": "distilgpt2",
+  "download_date": "2025-08-06T09:50:58.821742",
+  "placeholder": true
+}

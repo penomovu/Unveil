@@ -1,0 +1,6 @@
+{
+  "model_max_length": 1024,
+  "pad_token": "<|endoftext|>",
+  "unk_token": "<|endoftext|>",
+  "placeholder": true
+}
