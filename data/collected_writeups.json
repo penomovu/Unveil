@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Sample Buffer Overflow Challenge",
+    "content": "This is a buffer overflow challenge where we need to exploit a vulnerable C program.\n                \n                The program has a function with strcpy that doesn't check bounds:\n                ```c\n                void vulnerable_function(char *input) {\n                    char buffer[64];\n                    strcpy(buffer, input);\n                }\n                ```\n                \n                To exploit this, we craft a payload that overflows the buffer and overwrites the return address.\n                We use pattern_create to find the exact offset, then place our shellcode address.\n                \n                Flag: ctf{buffer_overflow_exploited_successfully}\n                ",
+    "source": "sample",
+    "url": "demo://sample1",
+    "collected_date": "2025-08-06 08:04:28"
+  },
+  {
+    "title": "SQL Injection Web Challenge",
+    "content": "This web challenge demonstrates SQL injection vulnerability.\n                \n                The login form is vulnerable to SQL injection:\n                Username: admin' OR '1'='1' --\n                Password: anything\n                \n                This bypasses authentication by making the SQL query always true.\n                We can also use UNION queries to extract data:\n                ' UNION SELECT username, password FROM users --\n                \n                Flag: ctf{sql_injection_is_dangerous}\n                ",
+    "source": "sample",
+    "url": "demo://sample2",
+    "collected_date": "2025-08-06 08:04:28"
+  },
+  {
+    "title": "Cryptography RSA Challenge",
+    "content": "This crypto challenge involves breaking weak RSA encryption.\n                \n                Given:\n                - n = 143 (public key modulus)\n                - e = 7 (public exponent)\n                - c = 12 (ciphertext)\n                \n                First we factor n: 143 = 11 * 13\n                Calculate phi(n) = (11-1) * (13-1) = 120\n                Find d such that e*d \u2261 1 (mod 120)\n                d = 103 (private exponent)\n                \n                Decrypt: m = c^d mod n = 12^103 mod 143 = 67\n                \n                Flag: ctf{weak_rsa_factorization}\n                ",
+    "source": "sample",
+    "url": "demo://sample3",
+    "collected_date": "2025-08-06 08:04:28"
+  },
+  {
+    "title": "Forensics Memory Dump Analysis",
+    "content": "This forensics challenge requires analyzing a memory dump.\n                \n                Using Volatility framework:\n                1. volatility -f memory.dmp imageinfo\n                2. volatility -f memory.dmp --profile=Win7SP1x64 pslist\n                3. volatility -f memory.dmp --profile=Win7SP1x64 filescan | grep flag\n                4. volatility -f memory.dmp --profile=Win7SP1x64 dumpfiles -D output/\n                \n                Found hidden process with suspicious network connections.\n                Extracted files reveal encrypted flag in process memory.\n                \n                Flag: ctf{memory_forensics_investigation}\n                ",
+    "source": "sample",
+    "url": "demo://sample4",
+    "collected_date": "2025-08-06 08:04:28"
+  }
+]

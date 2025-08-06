@@ -1,122 +1,92 @@
 [
   {
+    "url": "https://github.com/daffainfo/ctf-writeup",
+    "type": "github",
+    "name": "DaffaInfo CTF Writeups (558+ writeups)",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://github.com/siunam321/CTF-Writeups",
+    "type": "github", 
+    "name": "siunam321 CTF Writeups",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://github.com/kossiitkgp/ctf-writeups",
+    "type": "github",
+    "name": "IITKGP Team CTF Writeups",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://github.com/LazyTitan33/CTF-Writeups",
+    "type": "github",
+    "name": "LazyTitan33 CTF Writeups",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://github.com/perfectblue/ctf-writeups",
+    "type": "github",
+    "name": "Perfect Blue Team Writeups",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://github.com/shiltemann/CTF-writeups-public",
+    "type": "github",
+    "name": "Galaxians Team Public Writeups",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://github.com/i-m-down-QQ/writeups",
+    "type": "github",
+    "name": "CTF Writeups Backup Collection",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://ctftime.org/writeups",
+    "type": "website",
+    "name": "CTFtime Official Writeups",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://siunam321.github.io/ctf/",
+    "type": "website",
+    "name": "siunam321 Personal Blog",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
+    "url": "https://medium.com/ctf-writeups",
+    "type": "website",
+    "name": "Medium CTF Writeups Publication",
+    "added_date": "2025-08-06 08:02:00"
+  },
+  {
     "url": "https://github.com/p4-team/ctf",
     "type": "github",
     "name": "p4 Team CTF Writeups",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/ctfs/write-ups-2023",
-    "type": "github",
-    "name": "CTF Writeups 2023",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/ctfs/write-ups-2022",
-    "type": "github",
-    "name": "CTF Writeups 2022",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/sixstars/starctf2018",
-    "type": "github",
-    "name": "StarCTF 2018 Writeups",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/p4-team/ctf-2019",
-    "type": "github",
-    "name": "p4 Team CTF 2019 Writeups",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/SharkyCTF/write-ups",
-    "type": "github",
-    "name": "SharkyCTF Writeups",
-    "added_date": "2025-08-06 12:00:00"
+    "added_date": "2025-08-06 08:02:00"
   },
   {
     "url": "https://github.com/VulnHub/ctf-writeups",
     "type": "github",
     "name": "VulnHub CTF Writeups",
-    "added_date": "2025-08-06 12:00:00"
+    "added_date": "2025-08-06 08:02:00"
   },
   {
-    "url": "https://github.com/teambi0s/bi0sCTF",
+    "url": "https://github.com/ctfs/write-ups-2017",
     "type": "github",
-    "name": "bi0s CTF Writeups",
-    "added_date": "2025-08-06 12:00:00"
+    "name": "Community CTF Writeups 2017",
+    "added_date": "2025-08-06 08:02:00"
   },
   {
-    "url": "https://github.com/OpenToAll/ctf-writeups",
+    "url": "https://github.com/ctfs/write-ups-2016",
     "type": "github",
-    "name": "OpenToAll CTF Writeups",
-    "added_date": "2025-08-06 12:00:00"
+    "name": "Community CTF Writeups 2016",
+    "added_date": "2025-08-06 08:02:00"
   },
   {
-    "url": "https://github.com/DownUnderCTF/Challenges_2023_Public",
+    "url": "https://github.com/sajjadium/ctf-archives",
     "type": "github",
-    "name": "DownUnderCTF 2023 Challenges",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/HackTheBox/writeups",
-    "type": "github",
-    "name": "HackTheBox Official Writeups",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/picoCTF/picoCTF",
-    "type": "github",
-    "name": "picoCTF Challenges and Writeups",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/pwning/public-writeup",
-    "type": "github",
-    "name": "Plaid Parliament of Pwning Writeups",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/BSidesSF/ctf-2023-release",
-    "type": "github",
-    "name": "BSidesSF CTF 2023",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://github.com/TJCTF/tjctf-2023-challenges",
-    "type": "github",
-    "name": "TJCTF 2023 Challenges",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://ctftime.org",
-    "type": "website",
-    "name": "CTFtime - CTF Events and Writeups",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://0x00sec.org",
-    "type": "website",
-    "name": "0x00sec - Security Community",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://gynvael.coldwind.pl",
-    "type": "website",
-    "name": "Gynvael's Blog - Security Research",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://blog.orange.tw",
-    "type": "website",
-    "name": "Orange Tsai's Blog",
-    "added_date": "2025-08-06 12:00:00"
-  },
-  {
-    "url": "https://liveoverflow.com/category/ctf/",
-    "type": "website",
-    "name": "LiveOverflow CTF Content",
-    "added_date": "2025-08-06 12:00:00"
+    "name": "CTF Archives (2017-2024)",
+    "added_date": "2025-08-06 08:02:00"
   }
 ]

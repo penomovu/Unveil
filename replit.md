@@ -62,10 +62,31 @@ The system uses Flask sessions with random secret keys for basic security. Globa
 - **Feather Icons 4.28.0**: Icon library for navigation and interface elements
 
 ## Data Sources
-The system is configured to collect from:
-- GitHub repositories containing CTF writeups (p4-team, ctfs organization, VulnHub, etc.)
-- Public CTF writeup websites and blogs
-- Community-contributed cybersecurity content
+The system is configured to collect from 15+ high-quality CTF writeup sources:
+
+**GitHub Repositories:**
+- DaffaInfo CTF Writeups (558+ writeups from multiple competitions)
+- siunam321 CTF Writeups (comprehensive personal collection)
+- IITKGP Team CTF Writeups (ranked #41 in India)
+- LazyTitan33 CTF Writeups (HackTheBox Business CTFs)
+- Perfect Blue Team Writeups (professional team, 686+ stars)
+- Galaxians Team Public Writeups (team collaboration)
+- CTF Writeups Backup Collection
+- p4 Team CTF Writeups (established team)
+- VulnHub CTF Writeups (vulnerability research focus)
+- Community CTF Writeups (2016-2017 historical)
+- CTF Archives (2017-2024 comprehensive collection)
+
+**Websites & Blogs:**
+- CTFtime Official Writeups (central CTF hub)
+- siunam321 Personal Blog (detailed tutorials)
+- Medium CTF Writeups Publication (curated content)
+
+**Content Coverage:**
+- Recent 2025 CTF competitions (UIUCTF, Google CTF, DownUnderCTF)
+- TryHackMe and HackTheBox writeups
+- PortSwigger Labs (comprehensive web security)
+- Advanced topics: kernel exploitation, heap challenges, client-side web
 
 ## File Storage
 All data is stored locally in JSON format:
