@@ -98,8 +98,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>🏆 CTF AI System</h1>
-        <p class="subtitle">Your AI assistant for cybersecurity capture-the-flag challenges</p>
+        <h1>🔒 PentestGPT System</h1>
+        <p class="subtitle">Advanced AI-powered penetration testing assistant for cybersecurity professionals</p>
         
         <div class="status-bar">
             <strong>Status:</strong> <span id="status">Initializing...</span> | 
@@ -109,17 +109,19 @@
         
         <div class="chat" id="chat">
             <div class="message ai">
-                <strong>CTF AI:</strong> Hello! I'm your specialized CTF assistant. I can help you with:
-                <br>• Web exploitation (SQL injection, XSS, etc.)
-                <br>• Binary exploitation (buffer overflows, ROP chains)
-                <br>• Cryptography (RSA attacks, hash collisions)
-                <br>• Forensics and reverse engineering
-                <br><br>What challenge are you working on today?
+                <strong>PentestGPT:</strong> Greetings! I'm your advanced AI penetration testing assistant. I can help you with:
+                <br>• Web application security testing (OWASP Top 10, API testing)
+                <br>• Network penetration testing (reconnaissance, enumeration, exploitation)
+                <br>• Binary exploitation & reverse engineering (pwn, malware analysis)
+                <br>• Cryptographic analysis & attack methodologies
+                <br>• Digital forensics & incident response
+                <br>• OSINT & social engineering assessments
+                <br><br>What security assessment are you conducting? Provide target details for tailored guidance.
             </div>
         </div>
         
         <div class="input-area">
-            <input type="text" id="question" placeholder="Describe your CTF challenge or ask a specific question..." onkeypress="if(event.key==='Enter') ask()">
+            <input type="text" id="question" placeholder="Describe your penetration test scenario, target, or security question..." onkeypress="if(event.key==='Enter') ask()">
             <button onclick="ask()">Ask AI</button>
         </div>
     </div>
@@ -163,26 +165,32 @@
                 throw new Error('AI model not loaded');
             }
             
-            const ctfPrompt = `You are an expert CTF (Capture The Flag) cybersecurity specialist with deep knowledge of:
+            const ctfPrompt = `You are PentestGPT - an advanced AI penetration testing assistant specializing in CTF challenges. Analyze this cybersecurity scenario:
 
-QUESTION: ${question}
+CHALLENGE: ${question}
 
-As a CTF expert, provide detailed, actionable guidance. Focus on:
+ANALYSIS FRAMEWORK:
+1. RECONNAISSANCE: Identify attack surface and entry points
+2. VULNERABILITY ASSESSMENT: Categorize potential security weaknesses
+3. EXPLOITATION: Provide step-by-step attack methodology
+4. POST-EXPLOITATION: Suggest privilege escalation or data extraction
 
-🔸 WEB EXPLOITATION: SQL injection, XSS, CSRF, LFI/RFI, authentication bypass, directory traversal
-🔸 BINARY EXPLOITATION: Buffer overflows, ROP chains, shellcode injection, format string bugs, heap exploitation  
-🔸 CRYPTOGRAPHY: RSA attacks, hash collisions, cipher analysis, random number weaknesses, padding oracles
-🔸 REVERSE ENGINEERING: Assembly analysis, binary unpacking, anti-debugging, malware analysis
-🔸 FORENSICS: File analysis, steganography, network packet analysis, memory dumps, timeline reconstruction
-🔸 MISC: Logic puzzles, encoding/decoding, esoteric challenges
+SPECIALIZATION AREAS:
+• WEB APPLICATION SECURITY: SQL injection, XSS, CSRF, SSRF, authentication bypass, directory traversal, LFI/RFI, XXE
+• BINARY EXPLOITATION: Buffer/heap overflows, format strings, ROP/JOP chains, shellcode development, ASLR/DEP bypass
+• CRYPTANALYSIS: RSA factorization, padding oracles, weak random numbers, hash collisions, cipher breaking, side-channel attacks
+• NETWORK SECURITY: Port scanning, service enumeration, protocol exploitation, man-in-the-middle attacks
+• REVERSE ENGINEERING: Static/dynamic analysis, unpacking, anti-debugging bypass, malware analysis, firmware extraction
+• DIGITAL FORENSICS: File carving, metadata analysis, steganography, memory forensics, timeline reconstruction
+• OSINT: Information gathering, social engineering, public records analysis
 
-For each challenge:
-1. Identify the vulnerability type
-2. Suggest specific tools and techniques  
-3. Provide step-by-step exploitation approach
-4. Include relevant commands or code snippets when helpful
+METHODOLOGY:
+1. Threat modeling and attack vector identification
+2. Tool selection (nmap, Burp Suite, Metasploit, Ghidra, Wireshark, etc.)
+3. Exploit development with code examples
+4. Defensive recommendations
 
-Be precise, technical, and actionable. If you need more context, ask specific questions.`;
+Provide technical depth appropriate for cybersecurity professionals. Include specific commands, payloads, and exploit code when relevant.`;
 
             const messages = [
                 { role: "system", content: "You are an expert CTF (Capture The Flag) cybersecurity assistant." },
@@ -255,7 +263,7 @@ Be precise, technical, and actionable. If you need more context, ask specific qu
             const chat = document.getElementById('chat');
             const div = document.createElement('div');
             div.className = 'message ' + (type === 'loading' ? 'loading' : type);
-            div.innerHTML = '<strong>' + (type === 'user' ? 'You' : type === 'loading' ? 'Processing' : 'CTF AI') + ':</strong> ' + text.replace(/\n/g, '<br>');
+            div.innerHTML = '<strong>' + (type === 'user' ? 'You' : type === 'loading' ? 'Processing' : 'PentestGPT') + ':</strong> ' + text.replace(/\n/g, '<br>');
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
             return div;

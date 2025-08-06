@@ -9,100 +9,259 @@ import random
 from datetime import datetime
 
 # CTF Knowledge Base
-CTF_KNOWLEDGE = [
+PENTEST_KNOWLEDGE = [
     {
-        "title": "SQL Injection Basics",
+        "title": "Advanced SQL Injection Techniques",
         "category": "web",
-        "content": "SQL injection occurs when user input is not properly sanitized before being used in SQL queries. Common payloads include ' OR '1'='1, UNION SELECT statements, and time-based blind injection techniques.",
-        "solution": "Use parameterized queries, input validation, and web application firewalls."
+        "content": "Beyond basic SQLi: Error-based extraction using EXTRACTVALUE/UPDATEXML, Boolean blind injection with SUBSTRING, Time-based with SLEEP/WAITFOR DELAY, UNION-based with NULL balancing, Second-order injection, and NoSQL injection for MongoDB/CouchDB.",
+        "tools": ["sqlmap", "Burp Suite", "SQLNinja", "NoSQLMap"],
+        "payloads": ["' UNION SELECT NULL,@@version,NULL-- -", "1' AND (SELECT SUBSTRING(username,1,1) FROM users WHERE id=1)='a'-- -", "'; WAITFOR DELAY '00:00:05'-- -"],
+        "solution": "Parameterized queries, stored procedures, input validation, WAF deployment, principle of least privilege"
     },
     {
-        "title": "Buffer Overflow Exploitation", 
-        "category": "pwn",
-        "content": "Buffer overflows happen when a program writes more data to a buffer than it can hold, potentially overwriting adjacent memory. This can lead to code execution by overwriting return addresses.",
-        "solution": "Find the offset to overwrite the return address, control EIP/RIP, and inject shellcode or use ROP chains."
+        "title": "Modern Binary Exploitation",
+        "category": "pwn", 
+        "content": "Advanced pwn: Stack/heap overflows with ASLR/PIE bypass, ROP/JOP chain construction, ret2libc/ret2syscall, Format string arbitrary write, Use-after-free exploitation, Kernel exploitation techniques, and ARM/x86-64 shellcoding.",
+        "tools": ["gdb + GEF/pwndbg", "ROPgadget", "pwntools", "radare2", "Ghidra", "checksec"],
+        "payloads": ["cyclic(200)", "p64(pop_rdi) + p64(binsh) + p64(system)", "b'%{}c%{}$hn'.format(target & 0xffff, offset)"],
+        "solution": "Stack canaries, ASLR, DEP/NX bit, FORTIFY_SOURCE, Control Flow Integrity (CFI)"
     },
     {
-        "title": "XSS Attack Vectors",
-        "category": "web", 
-        "content": "Cross-site scripting allows attackers to inject malicious scripts into web pages. Types include reflected, stored, and DOM-based XSS.",
-        "solution": "Sanitize user input, use Content Security Policy headers, and escape output properly."
+        "title": "Cross-Site Scripting (XSS) Advanced",
+        "category": "web",
+        "content": "Advanced XSS: DOM-based via innerHTML/document.write, Mutation XSS (mXSS), CSP bypass techniques, JavaScript prototype pollution, PostMessage exploitation, and Electron application XSS.",
+        "tools": ["BeEF", "XSStrike", "DOMPurify", "Burp XSS Validator"],
+        "payloads": ["<img src=x onerror=alert(1)>", "javascript:alert(document.domain)", "<svg/onload=alert`1`>", "eval(atob('YWxlcnQoMSk='))"],
+        "solution": "Content Security Policy, input sanitization, output encoding, HTTPOnly cookies, SameSite attribute"
     },
     {
-        "title": "RSA Cryptography Attacks",
+        "title": "RSA Cryptanalysis Methods",
         "category": "crypto",
-        "content": "Common RSA attacks include small exponent attacks, common modulus attacks, Wiener's attack for small private exponents, and timing attacks.",
-        "solution": "Use proper padding schemes like OAEP, check for weak keys, and implement constant-time operations."
+        "content": "RSA attacks: Factorization with pollard-rho/quadratic sieve, Small private exponent (Wiener's attack), Common modulus attack, Coppersmith's attack, Fault injection, and timing/power analysis side channels.",
+        "tools": ["SageMath", "factordb.com", "RsaCtfTool", "Yafu", "msieve", "OpenSSL"],
+        "payloads": ["sage: factor(n)", "python RsaCtfTool.py -n N -e E --attack wiener", "openssl rsautl -decrypt -in cipher.txt"],
+        "solution": "Use strong padding (OAEP), key size ≥2048 bits, secure random generation, constant-time implementations"
     },
     {
-        "title": "Format String Vulnerabilities",
-        "category": "pwn",
-        "content": "Format string bugs occur when user input is used directly as a format string in printf-family functions. Attackers can read/write arbitrary memory.",
-        "solution": "Use %n to write to memory addresses, leak stack values with %x/%p, and control format string parameters."
+        "title": "Network Reconnaissance & Exploitation",
+        "category": "network",
+        "content": "Advanced techniques: Service enumeration with custom scripts, SMB relay attacks, Kerberos attacks (ASREPRoast/Kerberoasting), LDAP injection, DNS poisoning, IPv6 attacks, and wireless security bypasses.",
+        "tools": ["nmap", "masscan", "Responder", "Impacket", "BloodHound", "Empire", "Cobalt Strike"],
+        "payloads": ["nmap -sC -sV -O -A target", "python GetNPUsers.py domain/ -usersfile users.txt -format john", "responder -I eth0 -wrf"],
+        "solution": "Network segmentation, SMB signing, disable LLMNR/NBT-NS, Kerberos pre-authentication, monitoring"
     },
     {
-        "title": "Directory Traversal",
-        "category": "web",
-        "content": "Path traversal vulnerabilities allow attackers to read files outside the intended directory by using ../../../ sequences.",
-        "solution": "Input validation, canonicalize paths, use chroot jails, and whitelist allowed files."
+        "title": "Reverse Engineering Methodologies", 
+        "category": "reverse",
+        "content": "RE techniques: Static analysis with disassemblers, Dynamic analysis with debuggers, Anti-analysis evasion, Malware unpacking, Firmware extraction, Protocol reverse engineering, and mobile app analysis.",
+        "tools": ["IDA Pro", "Ghidra", "x64dbg", "OllyDbg", "Cheat Engine", "Frida", "JADX", "binwalk"],
+        "payloads": ["objdump -d binary", "strings -a binary | grep -i password", "ltrace ./binary", "strace -e trace=file ./binary"],
+        "solution": "Code obfuscation, anti-debugging techniques, packing, control flow flattening, virtualization"
+    },
+    {
+        "title": "Digital Forensics Analysis",
+        "category": "forensics",
+        "content": "Forensics methodology: Timeline analysis, file carving from unallocated space, metadata extraction, steganography detection, memory dump analysis, network packet forensics, and mobile device examination.",
+        "tools": ["Autopsy", "Volatility", "Wireshark", "binwalk", "foremost", "exiftool", "steghide", "John the Ripper"],
+        "payloads": ["volatility -f memory.dmp --profile=Win7SP1x64 pslist", "binwalk -e firmware.bin", "exiftool image.jpg", "steghide extract -sf image.jpg"],
+        "solution": "Data encryption, secure deletion, access logging, incident response procedures, chain of custody"
+    },
+    {
+        "title": "Open Source Intelligence (OSINT)",
+        "category": "osint", 
+        "content": "OSINT techniques: Social media reconnaissance, DNS/WHOIS analysis, Certificate transparency logs, Search engine dorking, Shodan/Censys scanning, Email harvesting, and metadata analysis.",
+        "tools": ["theHarvester", "recon-ng", "Maltego", "Shodan", "Censys", "Google Dorks", "SpiderFoot"],
+        "payloads": ["site:target.com filetype:pdf", "intitle:\"index of\" password", "theHarvester -d target.com -l 100 -b google"],
+        "solution": "Information classification, data loss prevention, social media policies, employee training"
     }
 ]
 
-def generate_ctf_response(question):
-    """Generate intelligent CTF AI response"""
+def generate_pentestgpt_response(question):
+    """Generate PentestGPT-style penetration testing response"""
     question_lower = question.lower()
     
-    # Enhanced keyword matching
+    # Advanced pattern matching with multiple criteria
     best_match = None
     best_score = 0
     
-    for item in CTF_KNOWLEDGE:
+    for item in PENTEST_KNOWLEDGE:
         score = 0
-        keywords = [item['title'].lower(), item['category'].lower()] + item['content'].lower().split()[:20]
         
-        # Calculate relevance score
-        for keyword in keywords:
+        # Multi-factor scoring
+        title_words = item['title'].lower().split()
+        content_words = item['content'].lower().split()[:30]
+        tool_words = [tool.lower() for tool in item.get('tools', [])]
+        
+        all_keywords = title_words + [item['category']] + content_words + tool_words
+        
+        # Calculate relevance with weighted scoring
+        for keyword in all_keywords:
             if keyword in question_lower:
-                score += 1
-                if keyword in item['category'].lower():
-                    score += 2  # Category match bonus
-                if keyword in item['title'].lower():
-                    score += 3  # Title match bonus
-                    
+                if keyword in title_words:
+                    score += 5  # Title match highest priority
+                elif keyword == item['category']:
+                    score += 4  # Category match high priority
+                elif keyword in tool_words:
+                    score += 3  # Tool match medium priority
+                else:
+                    score += 1  # Content match basic priority
+        
         if score > best_score:
             best_score = score
             best_match = item
     
-    if best_match and best_score > 0:
+    if best_match and best_score >= 3:
+        # Generate comprehensive PentestGPT-style response
+        tools_section = "\n**RECOMMENDED TOOLS:**\n" + "\n".join([f"• {tool}" for tool in best_match.get('tools', [])])
+        
+        payloads_section = ""
+        if best_match.get('payloads'):
+            payloads_section = "\n\n**EXAMPLE PAYLOADS/COMMANDS:**\n```\n" + "\n".join(best_match['payloads']) + "\n```"
+        
+        defense_section = f"\n\n**DEFENSIVE COUNTERMEASURES:**\n{best_match['solution']}"
+        
+        answer = f"## {best_match['title']} [{best_match['category'].upper()}]\n\n**VULNERABILITY ANALYSIS:**\n{best_match['content']}{tools_section}{payloads_section}{defense_section}\n\n**NEXT STEPS:** Need specific target details? Provide more context about your environment, constraints, or specific objectives."
+        
         return {
-            "answer": f"**{best_match['title']} - {best_match['category'].upper()} Category**\n\n{best_match['content']}\n\n**Exploitation Steps:**\n{best_match['solution']}\n\n*Need more specific guidance? Describe your exact challenge scenario.*",
-            "confidence": min(0.95, 0.6 + (best_score * 0.1)),
+            "answer": answer,
+            "confidence": min(0.95, 0.7 + (best_score * 0.05)),
             "category": best_match['category'],
-            "source": best_match['title']
+            "source": f"PentestGPT-{best_match['title']}"
         }
     
-    # Intelligent fallback based on question type
-    if any(word in question_lower for word in ['web', 'http', 'cookie', 'session', 'xss', 'sql', 'injection']):
+    # Intelligent categorization with pentest methodology
+    if any(word in question_lower for word in ['web', 'http', 'api', 'cookie', 'session', 'xss', 'sql', 'injection', 'owasp']):
         category = "web"
-        answer = "For web exploitation challenges, start by examining the application for common vulnerabilities like SQL injection, XSS, CSRF, or authentication bypasses. Use tools like Burp Suite, check HTTP headers, analyze JavaScript, and test input validation."
-    elif any(word in question_lower for word in ['binary', 'exploit', 'buffer', 'overflow', 'pwn', 'shellcode']):
+        answer = """## WEB APPLICATION SECURITY ASSESSMENT
+
+**RECONNAISSANCE PHASE:**
+• Spider/crawl application (Burp Suite, OWASP ZAP)
+• Technology fingerprinting (Wappalyzer, whatweb)
+• Directory/file enumeration (dirb, gobuster, ffuf)
+
+**VULNERABILITY SCANNING:**
+• Automated scanning (Nikto, Nuclei templates)
+• Manual testing for OWASP Top 10
+• Parameter fuzzing and input validation testing
+
+**EXPLOITATION TECHNIQUES:**
+• SQL injection (sqlmap, manual testing)
+• Cross-site scripting (BeEF, custom payloads)
+• Authentication bypass attempts
+• Business logic flaws identification"""
+
+    elif any(word in question_lower for word in ['binary', 'exploit', 'buffer', 'overflow', 'pwn', 'rop', 'shellcode', 'assembly']):
         category = "pwn"
-        answer = "For binary exploitation, analyze the binary with tools like gdb, checksec, and objdump. Look for buffer overflows, format string bugs, or ROP gadgets. Consider ASLR, NX, and stack canaries when planning your exploit."
-    elif any(word in question_lower for word in ['crypto', 'cipher', 'rsa', 'hash', 'encryption']):
+        answer = """## BINARY EXPLOITATION METHODOLOGY
+
+**STATIC ANALYSIS:**
+• File analysis (file, checksec, strings, objdump)
+• Disassembly (Ghidra, radare2, IDA Pro)
+• Vulnerability identification (buffer overflows, format strings)
+
+**DYNAMIC ANALYSIS:**
+• Debugging (gdb + GEF/pwndbg)
+• Crash reproduction and analysis
+• Memory layout examination
+
+**EXPLOIT DEVELOPMENT:**
+• Offset calculation (pattern_create, pattern_offset)
+• ROP chain construction (ROPgadget, ropper)
+• Shellcode development (msfvenom, custom assembly)
+• Bypass techniques (ASLR, stack canaries, DEP)"""
+
+    elif any(word in question_lower for word in ['crypto', 'cipher', 'rsa', 'hash', 'encryption', 'decrypt', 'key']):
         category = "crypto"
-        answer = "For cryptography challenges, identify the encryption scheme, look for implementation weaknesses, check for small exponents, weak keys, or padding oracle attacks. Tools like sage, openssl, and online factorization services can help."
-    elif any(word in question_lower for word in ['forensics', 'file', 'image', 'metadata', 'steganography']):
+        answer = """## CRYPTOGRAPHIC ANALYSIS APPROACH
+
+**CIPHER IDENTIFICATION:**
+• Algorithm detection (cipher-identifier, CyberChef)
+• Key/IV analysis and entropy testing
+• Implementation weakness assessment
+
+**ATTACK METHODOLOGIES:**
+• Classical cipher attacks (frequency analysis, Kasiski examination)
+• Modern crypto attacks (padding oracles, timing attacks)
+• RSA-specific attacks (factorization, small exponents, Wiener's attack)
+
+**TOOLS & TECHNIQUES:**
+• SageMath for mathematical analysis
+• RsaCtfTool for automated RSA attacks
+• John the Ripper/hashcat for hash cracking
+• Custom scripts for protocol analysis"""
+
+    elif any(word in question_lower for word in ['network', 'scan', 'port', 'service', 'nmap', 'enumeration']):
+        category = "network"
+        answer = """## NETWORK PENETRATION TESTING
+
+**RECONNAISSANCE:**
+• Network discovery (nmap, masscan)
+• Service enumeration (nmap scripts, manual banners)
+• OS fingerprinting and version detection
+
+**VULNERABILITY ASSESSMENT:**
+• Automated scanning (Nessus, OpenVAS, Nuclei)
+• Manual service testing
+• Protocol-specific attacks (SMB, SNMP, DNS)
+
+**EXPLOITATION:**
+• Service exploitation (Metasploit, custom exploits)
+• Credential attacks (hydra, medusa, patator)
+• Post-exploitation (lateral movement, privilege escalation)"""
+
+    elif any(word in question_lower for word in ['forensics', 'file', 'image', 'metadata', 'steganography', 'memory', 'dump']):
         category = "forensics"
-        answer = "For forensics challenges, examine file headers, metadata, and hidden data. Use tools like binwalk, strings, exiftool, and steghide. Check for hidden partitions, alternate data streams, or embedded files."
+        answer = """## DIGITAL FORENSICS INVESTIGATION
+
+**EVIDENCE ACQUISITION:**
+• Disk imaging (dd, FTK Imager, Cellebrite)
+• Memory capture (DumpIt, Magnet RAM Capture)
+• Network traffic capture (Wireshark, tcpdump)
+
+**ANALYSIS METHODOLOGY:**
+• Timeline reconstruction (Plaso, Autopsy)
+• File system analysis (Sleuth Kit, PhotoRec)
+• Memory forensics (Volatility Framework)
+• Steganography detection (stegsolve, zsteg, binwalk)
+
+**ARTIFACT RECOVERY:**
+• Deleted file carving (foremost, scalpel)
+• Metadata extraction (ExifTool, FOCA)
+• Registry/log analysis
+• Mobile device forensics (MSAB, Oxygen)"""
+
     else:
         category = "general"
-        answer = "I specialize in CTF challenges across web exploitation, binary exploitation (pwn), cryptography, forensics, and reverse engineering. Please provide more details about your specific challenge for targeted assistance."
+        answer = """## PENETRATION TESTING METHODOLOGY
+
+**INFORMATION GATHERING:**
+• OSINT reconnaissance (Google dorking, social media, DNS)
+• Network discovery and enumeration
+• Technology stack identification
+
+**VULNERABILITY ASSESSMENT:**
+• Automated and manual vulnerability scanning
+• Configuration review and security assessment
+• Threat modeling and attack surface analysis
+
+**EXPLOITATION & POST-EXPLOITATION:**
+• Proof-of-concept development
+• Privilege escalation techniques
+• Persistence and lateral movement
+• Evidence collection and documentation
+
+**REPORTING:**
+• Executive summary with business impact
+• Technical findings with remediation steps
+• Risk assessment and prioritization
+
+Provide more specific details about your target environment, objectives, or constraints for tailored guidance."""
     
     return {
         "answer": answer,
-        "confidence": random.uniform(0.7, 0.85),
+        "confidence": random.uniform(0.75, 0.90),
         "category": category,
-        "source": "ctf_ai_analysis"
+        "source": "PentestGPT-Methodology"
     }
 
 class handler(BaseHTTPRequestHandler):
@@ -127,7 +286,7 @@ class handler(BaseHTTPRequestHandler):
             time.sleep(random.uniform(0.3, 0.8))
             
             # Generate response
-            response_data = generate_ctf_response(question)
+            response_data = generate_pentestgpt_response(question)
             
             # Send response
             self.send_response(200)
@@ -141,7 +300,7 @@ class handler(BaseHTTPRequestHandler):
                 "confidence": response_data["confidence"],
                 "category": response_data["category"],
                 "timestamp": datetime.now().isoformat(),
-                "model": "CTF-AI-Enhanced"
+                "model": "PentestGPT-Enhanced"
             }
             
             self.wfile.write(json.dumps(full_response).encode())

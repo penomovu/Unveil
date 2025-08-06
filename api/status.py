@@ -15,12 +15,13 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
         
         response = {
-            "status": "online",
-            "model": "CTF-AI-Enhanced",
-            "knowledge_entries": 6,
-            "categories": ["web", "pwn", "crypto", "forensics", "reverse", "misc"],
+            "status": "online", 
+            "model": "PentestGPT-Enhanced",
+            "knowledge_entries": 8,
+            "categories": ["web", "pwn", "crypto", "forensics", "reverse", "network", "osint", "misc"],
+            "methodology": "reconnaissance -> assessment -> exploitation -> post-exploitation",
             "timestamp": datetime.now().isoformat(),
-            "version": "2.0.0"
+            "version": "3.0.0"
         }
         
         self.wfile.write(json.dumps(response).encode())
