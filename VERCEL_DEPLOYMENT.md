@@ -2,12 +2,31 @@
 
 ## Quick Deploy to Vercel
 
-### Method 1: Direct Import (Recommended)
+### Step 1: Prepare Repository for GitHub
+```bash
+# Copy the requirements file for Vercel
+cp vercel_requirements.txt requirements.txt
+
+# Initialize git repository
+git init
+git add .
+git commit -m "CTF AI System with Client-Side AI"
+git branch -M main
+
+# Add your GitHub repository
+git remote add origin https://github.com/yourusername/your-repo-name.git
+git push -u origin main
+```
+
+### Step 2: Deploy on Vercel
 1. Go to [vercel.com](https://vercel.com)
 2. Click "New Project"
-3. Import from Git repository
-4. Select this repository
-5. Vercel will automatically detect the configuration
+3. Import from Git repository (GitHub)
+4. Select your repository
+5. **Important**: Ensure these files are present:
+   - `app.py` (main Flask app)
+   - `requirements.txt` (Python dependencies)
+   - `vercel.json` (Vercel configuration)
 6. Click "Deploy"
 
 ### Method 2: Vercel CLI
@@ -24,11 +43,28 @@ vercel --prod
 
 ## Configuration Files Created
 
-### `vercel.json`
-- Main Vercel configuration
-- Routes static files and API endpoints
-- Sets Python runtime to 3.9
-- Configures maximum Lambda size
+### `vercel.json` ✅
+```json
+{
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ]
+}
+```
+
+### `app.py` ✅
+- Main Flask application (copied from app_minimal.py)
+- Entry point for Vercel deployment
+- Contains all routes and client-side AI integration
 
 ### `api/index.py`
 - Entry point for Vercel Python functions

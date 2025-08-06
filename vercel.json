@@ -1,31 +1,14 @@
 {
-  "version": 2,
   "builds": [
     {
-      "src": "app_minimal.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "15mb"
-      }
+      "src": "app.py",
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "app_minimal.py"
+      "dest": "app.py"
     }
-  ],
-  "env": {
-    "PYTHONPATH": ".",
-    "FLASK_ENV": "production"
-  },
-  "functions": {
-    "app_minimal.py": {
-      "runtime": "python3.9"
-    }
-  }
+  ]
 }
