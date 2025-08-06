@@ -4,30 +4,19 @@
 
 ### Step 1: Prepare Repository for GitHub
 ```bash
-# Copy the requirements file for Vercel (CRITICAL!)
+# Copy the requirements file for Vercel
 cp vercel_requirements.txt requirements.txt
-
-# Replace the main app file for Vercel deployment
-cp app_vercel.py app.py
 
 # Initialize git repository
 git init
 git add .
-git commit -m "CTF AI System with Client-Side AI - Vercel Ready"
+git commit -m "CTF AI System with Client-Side AI"
 git branch -M main
 
 # Add your GitHub repository
 git remote add origin https://github.com/yourusername/your-repo-name.git
 git push -u origin main
 ```
-
-### CRITICAL FIX for 500 Error:
-The original error was caused by missing dependencies. The new `app_vercel.py` file:
-- ✅ Removes all complex imports (config, shared_db, etc.)
-- ✅ Uses only Flask (minimal dependencies) 
-- ✅ Includes fallback HTML if templates are missing
-- ✅ Has proper error handling for Vercel environment
-- ✅ All AI processing happens client-side (zero server AI dependencies)
 
 ### Step 2: Deploy on Vercel
 1. Go to [vercel.com](https://vercel.com)
