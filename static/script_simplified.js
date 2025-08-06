@@ -2,6 +2,7 @@
 class SimplifiedCTFAI {
     constructor() {
         this.currentTab = 'chat';
+        this.clientAI = new ClientAI();
         this.init();
     }
 
@@ -82,29 +83,23 @@ class SimplifiedCTFAI {
         this.showTypingIndicator();
         
         try {
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: message })
-            });
-            
-            const data = await response.json();
+            // Use client-side AI processing instead of server calls
+            const result = await this.clientAI.processQuestion(message);
             
             // Hide typing indicator
             this.hideTypingIndicator();
             
-            if (response.ok) {
-                this.addChatMessage(data.response, 'bot');
-            } else {
-                this.addChatMessage('Sorry, I encountered an error. Please try again.', 'bot');
-            }
+            // Add AI response with metadata
+            this.addChatMessage(result.response, 'bot');
+            
+            // Show response metadata
+            const metadataText = `Model: ${result.modelType} | Time: ${Math.round(result.responseTime)}ms | Category: ${result.category}`;
+            this.addMetadataMessage(metadataText);
             
         } catch (error) {
             this.hideTypingIndicator();
-            this.addChatMessage('Sorry, I could not connect to the server.', 'bot');
-            console.error('Chat error:', error);
+            this.addChatMessage('I encountered an error processing your question, but I can still help! Try asking about specific CTF topics like web security, cryptography, or binary exploitation.', 'bot');
+            console.error('Client AI error:', error);
         }
     }
 
@@ -121,6 +116,16 @@ class SimplifiedCTFAI {
         messagesDiv.appendChild(messageDiv);
         
         // Scroll to bottom
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    addMetadataMessage(content) {
+        const messagesDiv = document.getElementById('chat-messages');
+        const metadataDiv = document.createElement('div');
+        metadataDiv.className = 'message metadata-message';
+        metadataDiv.innerHTML = `<small class="text-muted">${content}</small>`;
+        
+        messagesDiv.appendChild(metadataDiv);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
@@ -339,10 +344,36 @@ class SimplifiedCTFAI {
 
     async pollStatus() {
         try {
-            const response = await fetch('/api/status');
-            const data = await response.json();
+            // Get client-side AI status
+            const clientStatus = this.clientAI.getStatus();
             
-            this.updateStatus(data);
+            // Try to get server status but don't fail if unavailable
+            let serverData = {
+                writeup_count: 0,
+                last_training: new Date().toISOString(),
+                training_in_progress: false
+            };
+            
+            try {
+                const response = await fetch('/api/status');
+                if (response.ok) {
+                    serverData = await response.json();
+                }
+            } catch (e) {
+                // Server unavailable, use client-only mode
+            }
+            
+            // Combine client and server status, prioritizing client for AI model info
+            const combinedData = {
+                ...serverData,
+                model_loaded: clientStatus.modelLoaded,
+                active_model: clientStatus.currentModel || 'Client-Side AI',
+                model_type: clientStatus.modelType,
+                context_window: clientStatus.contextWindow,
+                client_side: true
+            };
+            
+            this.updateStatus(combinedData);
             
         } catch (error) {
             console.error('Status polling error:', error);

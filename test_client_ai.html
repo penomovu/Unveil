@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Client AI Test</title>
+</head>
+<body>
+    <script src="static/client_ai.js"></script>
+    <script>
+        async function testClientAI() {
+            console.log('Testing Client-Side AI...');
+            
+            const ai = new ClientAI();
+            
+            // Test model status
+            console.log('Initial Status:', ai.getStatus());
+            
+            // Test question processing
+            const question = 'How do I test for SQL injection in web applications?';
+            console.log('Question:', question);
+            
+            const result = await ai.processQuestion(question);
+            console.log('Result:', result);
+            
+            // Test model download
+            console.log('Starting model download...');
+            const downloadSuccess = await ai.downloadModel('distilgpt2');
+            console.log('Download Success:', downloadSuccess);
+            
+            // Test with loaded model
+            const newResult = await ai.processQuestion('What tools are best for cryptography challenges?');
+            console.log('With Model Result:', newResult);
+            
+            console.log('Final Status:', ai.getStatus());
+        }
+        
+        testClientAI().then(() => {
+            console.log('✅ Client AI test completed successfully!');
+        }).catch(error => {
+            console.error('❌ Client AI test failed:', error);
+        });
+    </script>
+</body>
+</html>
