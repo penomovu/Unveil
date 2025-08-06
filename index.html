@@ -102,9 +102,9 @@
         <p class="subtitle">Your AI assistant for cybersecurity capture-the-flag challenges</p>
         
         <div class="status-bar">
-            <strong>Status:</strong> <span id="status">Connecting...</span> | 
-            <strong>Knowledge Base:</strong> 4 categories | 
-            <strong>Response Time:</strong> ~1s
+            <strong>Status:</strong> <span id="status">Initializing...</span> | 
+            <strong>AI Model:</strong> Llama-2-7B (Client-side) | 
+            <strong>Mode:</strong> <span id="mode">Free & Private</span>
         </div>
         
         <div class="chat" id="chat">
@@ -124,18 +124,84 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.46/lib/index.min.js"></script>
     <script>
-        // Check status on load
-        fetch('/api/status')
-            .then(r => r.json())
-            .then(data => {
-                document.getElementById('status').textContent = 'Online';
-            })
-            .catch(e => {
-                document.getElementById('status').textContent = 'Error';
-            });
+        let engine = null;
+        let isModelLoaded = false;
         
-        function ask() {
+        // Initialize WebLLM on page load
+        async function initializeAI() {
+            try {
+                const statusEl = document.getElementById('status');
+                statusEl.textContent = 'Loading AI model...';
+                
+                // Use a lightweight model for CTF assistance
+                const selectedModel = "Llama-2-7b-chat-hf-q4f32_1";
+                
+                engine = new webllm.MLCEngine();
+                
+                // Set up progress callback
+                engine.setInitProgressCallback((progress) => {
+                    statusEl.textContent = `Loading model: ${Math.round(progress.progress * 100)}%`;
+                });
+                
+                await engine.reload(selectedModel);
+                isModelLoaded = true;
+                statusEl.textContent = 'AI Ready';
+                
+                console.log('CTF AI model loaded successfully');
+            } catch (error) {
+                console.error('Failed to load AI model:', error);
+                document.getElementById('status').textContent = 'AI Error - Using fallback';
+                // Fall back to server-side responses
+            }
+        }
+        
+        // Generate AI response using WebLLM
+        async function generateAIResponse(question) {
+            if (!isModelLoaded || !engine) {
+                throw new Error('AI model not loaded');
+            }
+            
+            const ctfPrompt = `You are a CTF (Capture The Flag) cybersecurity expert. Help with this challenge or question:
+
+${question}
+
+Provide practical, actionable guidance for CTF challenges. Focus on:
+- Web exploitation (SQL injection, XSS, CSRF, etc.)
+- Binary exploitation (buffer overflows, ROP, shellcode)
+- Cryptography (breaking ciphers, hash attacks, RSA)
+- Digital forensics (file analysis, steganography, network captures)
+- Reverse engineering (assembly analysis, malware)
+
+Be concise but thorough. If it's a specific challenge, suggest concrete steps to solve it.`;
+
+            const messages = [
+                { role: "system", content: "You are an expert CTF (Capture The Flag) cybersecurity assistant." },
+                { role: "user", content: ctfPrompt }
+            ];
+            
+            const reply = await engine.chat.completions.create({
+                messages: messages,
+                temperature: 0.7,
+                max_tokens: 500,
+            });
+            
+            return reply.choices[0].message.content;
+        }
+        
+        // Fallback to server when AI fails
+        async function fallbackResponse(question) {
+            const response = await fetch('/api/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: question })
+            });
+            const data = await response.json();
+            return data.answer;
+        }
+        
+        async function ask() {
             const input = document.getElementById('question');
             const question = input.value.trim();
             if (!question) return;
@@ -143,28 +209,38 @@
             addMessage('user', question);
             input.value = '';
             
-            const loadingMsg = addMessage('loading', 'Analyzing your question...');
+            const loadingMsg = addMessage('loading', 'AI is thinking...');
             
-            fetch('/api/ask', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: question })
-            })
-            .then(r => r.json())
-            .then(data => {
-                loadingMsg.remove();
-                const response = addMessage('ai', data.answer);
-                if (data.confidence) {
-                    const conf = document.createElement('div');
-                    conf.className = 'confidence';
-                    conf.textContent = `Confidence: ${Math.round(data.confidence * 100)}% | Category: ${data.category}`;
-                    response.appendChild(conf);
+            try {
+                let answer;
+                let confidence = 0;
+                let category = 'ai-generated';
+                
+                if (isModelLoaded && engine) {
+                    // Use client-side AI
+                    answer = await generateAIResponse(question);
+                    confidence = 95; // High confidence for AI responses
+                    loadingMsg.querySelector('strong').textContent = 'CTF AI';
+                    loadingMsg.innerHTML = loadingMsg.innerHTML.replace('AI is thinking...', 'Generating response...');
+                } else {
+                    // Fall back to server
+                    answer = await fallbackResponse(question);
+                    confidence = 75;
                 }
-            })
-            .catch(e => {
+                
                 loadingMsg.remove();
-                addMessage('ai', 'Sorry, there was an error processing your question. Please try again.');
-            });
+                const response = addMessage('ai', answer);
+                
+                const conf = document.createElement('div');
+                conf.className = 'confidence';
+                conf.textContent = `Confidence: ${confidence}% | Source: ${isModelLoaded ? 'Client AI' : 'Knowledge Base'}`;
+                response.appendChild(conf);
+                
+            } catch (error) {
+                console.error('Error generating response:', error);
+                loadingMsg.remove();
+                addMessage('ai', 'Sorry, I encountered an error. Please try again or check your connection.');
+            }
         }
         
         function addMessage(type, text) {
@@ -176,6 +252,9 @@
             chat.scrollTop = chat.scrollHeight;
             return div;
         }
+        
+        // Initialize AI when page loads
+        window.addEventListener('load', initializeAI);
     </script>
 </body>
 </html>
