@@ -259,9 +259,9 @@ def get_status():
         writeup_count = len(shared_db.get_writeups(limit=100))
     
     return jsonify({
-        'model_loaded': model_loaded,
+        'model_loaded': model_loaded and (local_ai.current_model_id is not None),
         'training_in_progress': training_in_progress,
-        'active_model': model_data['name'] if model_data else 'No Model',
+        'active_model': local_ai.current_model_id or model_data.get('name', 'No Model') if model_data else 'No Model',
         'writeup_count': writeup_count,
         'auto_training_enabled': True,
         'last_training': last_training_check.isoformat(),
@@ -272,13 +272,10 @@ def get_status():
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
-    """Handle chat messages"""
-    if not model_loaded:
-        return jsonify({'error': 'Model not loaded. Please wait for initialization.'}), 500
-        
+    """Handle chat messages"""        
     try:
         data = request.get_json()
-        question = data.get('message', '')
+        question = data.get('message', '') or data.get('question', '')
         
         if not question:
             return jsonify({'error': 'No question provided'}), 400
@@ -488,61 +485,29 @@ def background_tasks():
             time.sleep(60)
 
 if __name__ == '__main__':
-    # Initialize database or use fallback
-    if shared_db.init_tables():
-        logger.info("Database initialized successfully")
+    # Initialize database or use fallback  
+    logger.info("Initializing database connection...")
+    if shared_db.init_db():
+        logger.info("Database connected successfully")
         use_fallback_storage = False
+        if not shared_db.init_tables():
+            logger.warning("Table initialization failed, switching to fallback")
+            use_fallback_storage = True
     else:
-        logger.warning("Database initialization failed, using fallback mode")
+        logger.info("Using fallback JSON storage")
         use_fallback_storage = True
+        fallback_storage.init_storage()
     
-    # Load or create initial model
-    if not load_active_model():
-        logger.info("Creating initial model...")
-        # Create a basic model entry
-        model_bytes = json.dumps({'model_type': 'mock', 'writeup_count': 0}).encode('utf-8')
-        config_data = json.dumps({
-            'base_model': 'MockDialoGPT-Large-4K',
-            'context_window': 4096,
-            'created_at': datetime.now().isoformat()
-        })
-        
-        if use_fallback_storage:
-            if fallback_storage.save_model(
-                name="CTF-AI-MockLarge",
-                version="v1.0",
-                model_type="MockDialoGPT-Large-4K", 
-                model_data=model_bytes,
-                config_data=config_data
-            ):
-                model_loaded = True
-                logger.info("Initial model created in fallback storage")
-        else:
-            if shared_db.save_model(
-                name="CTF-AI-MockLarge",
-                version="v1.0",
-                model_type="MockDialoGPT-Large-4K", 
-                model_data=model_bytes,
-                config_data=config_data
-            ):
-                model_loaded = True
-                logger.info("Initial model created in database")
-    
-    # Start background tasks
-    bg_thread = threading.Thread(target=background_tasks)
-    bg_thread.daemon = True
-    bg_thread.start()
-    
-    # Initialize local AI system
-    logger.info("Starting CTF AI System with Local AI...")
-    
-    # Try to auto-download and load a model
+    # Initialize local AI system first
+    logger.info("Initializing Local AI Engine...")
     available_models = local_ai.get_available_models()
     downloaded_models = [mid for mid, info in available_models.items() if info['downloaded']]
     
     if downloaded_models:
         logger.info(f"Found downloaded model: {downloaded_models[0]}")
-        local_ai.load_model(downloaded_models[0])
+        if local_ai.load_model(downloaded_models[0]):
+            model_loaded = True
+            logger.info(f"Loaded model {downloaded_models[0]} successfully")
     else:
         logger.info("No models found locally, attempting auto-download...")
         def progress_callback(message):
@@ -550,12 +515,28 @@ if __name__ == '__main__':
         
         downloaded_model = local_ai.auto_download_best_model(progress_callback)
         if downloaded_model:
-            local_ai.load_model(downloaded_model)
-            logger.info(f"Successfully downloaded and loaded {downloaded_model}")
+            if local_ai.load_model(downloaded_model):
+                model_loaded = True
+                logger.info(f"Successfully downloaded and loaded {downloaded_model}")
+            else:
+                logger.warning("Model downloaded but failed to load, using fallback responses")
+                model_loaded = True
         else:
-            logger.info("Using mock responses with real CTF knowledge")
+            logger.info("Model download failed, using intelligent fallback responses")
+            model_loaded = True  # Still allow system to function
     
+    # Load additional training data if available
+    load_active_model()
+    
+    # Start background tasks
+    bg_thread = threading.Thread(target=background_tasks)
+    bg_thread.daemon = True
+    bg_thread.start()
+    
+    logger.info("Starting CTF AI System with Local AI...")
     logger.info(f"Local AI Engine ready with {local_ai.context_window} token context window")
+    logger.info(f"Model loaded: {model_loaded}")
+    logger.info(f"Current model: {local_ai.current_model_id or 'None'}")
     logger.info(f"Storage mode: {'Fallback JSON' if use_fallback_storage else 'Database'}")
     
     app.run(

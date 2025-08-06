@@ -17,14 +17,39 @@ class SharedDatabaseManager:
     
     def __init__(self):
         self.db_url = SHARED_DATABASE_URL
+        self.connection_failed = False
         
     def get_connection(self):
-        """Get database connection"""
+        """Get database connection with smart error handling"""
+        if not self.db_url or self.connection_failed:
+            return None
+            
         try:
             return psycopg2.connect(self.db_url)
         except Exception as e:
-            logger.error(f"Database connection failed: {e}")
+            if not self.connection_failed:  # Only log the first failure
+                logger.warning(f"Database connection failed, switching to fallback mode: {e}")
+                self.connection_failed = True
             return None
+    
+    def init_db(self):
+        """Initialize database or mark for fallback mode"""
+        if not self.db_url:
+            logger.info("No database URL configured, using fallback storage")
+            return False
+            
+        conn = self.get_connection()
+        if not conn:
+            logger.info("Database connection failed, using fallback storage")
+            return False
+            
+        try:
+            # Test the connection and close it
+            conn.close()
+            return self.init_tables()
+        except Exception as e:
+            logger.warning(f"Database test failed: {e}")
+            return False
     
     def init_tables(self):
         """Initialize all required tables"""

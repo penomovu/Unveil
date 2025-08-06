@@ -5,10 +5,11 @@ Configuration for CTF AI system with shared database
 import os
 
 # Shared database configuration (server-side)
-# Use a free external database service like Supabase, Neon, or PlanetScale
-SHARED_DATABASE_URL = os.environ.get('SHARED_DATABASE_URL', 
-    # Default to local PostgreSQL if available
-    f'postgresql://{os.environ.get("PGUSER", "postgres")}:{os.environ.get("PGPASSWORD", "password")}@{os.environ.get("PGHOST", "localhost")}:{os.environ.get("PGPORT", "5432")}/{os.environ.get("PGDATABASE", "ctfai")}'
+# Priority: Use Replit's provided DATABASE_URL, then external services, finally local fallback
+SHARED_DATABASE_URL = (
+    os.environ.get('DATABASE_URL') or  # Replit PostgreSQL
+    os.environ.get('SHARED_DATABASE_URL') or  # External database
+    None  # Force fallback mode if no database URL is available
 )
 
 # Model configuration with large context window
