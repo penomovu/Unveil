@@ -103,7 +103,7 @@
         
         <div class="status-bar">
             <strong>Status:</strong> <span id="status">Initializing...</span> | 
-            <strong>AI Model:</strong> Llama-2-7B (Client-side) | 
+            <strong>AI Model:</strong> Phi-3-Mini (Client-side) | 
             <strong>Mode:</strong> <span id="mode">Free & Private</span>
         </div>
         
@@ -135,8 +135,8 @@
                 const statusEl = document.getElementById('status');
                 statusEl.textContent = 'Loading AI model...';
                 
-                // Use a lightweight model for CTF assistance
-                const selectedModel = "Llama-2-7b-chat-hf-q4f32_1";
+                // Use Phi-3 Mini - better performance and CTF knowledge
+                const selectedModel = "Phi-3-mini-4k-instruct-q4f16_1";
                 
                 engine = new webllm.MLCEngine();
                 
@@ -163,18 +163,26 @@
                 throw new Error('AI model not loaded');
             }
             
-            const ctfPrompt = `You are a CTF (Capture The Flag) cybersecurity expert. Help with this challenge or question:
+            const ctfPrompt = `You are an expert CTF (Capture The Flag) cybersecurity specialist with deep knowledge of:
 
-${question}
+QUESTION: ${question}
 
-Provide practical, actionable guidance for CTF challenges. Focus on:
-- Web exploitation (SQL injection, XSS, CSRF, etc.)
-- Binary exploitation (buffer overflows, ROP, shellcode)
-- Cryptography (breaking ciphers, hash attacks, RSA)
-- Digital forensics (file analysis, steganography, network captures)
-- Reverse engineering (assembly analysis, malware)
+As a CTF expert, provide detailed, actionable guidance. Focus on:
 
-Be concise but thorough. If it's a specific challenge, suggest concrete steps to solve it.`;
+🔸 WEB EXPLOITATION: SQL injection, XSS, CSRF, LFI/RFI, authentication bypass, directory traversal
+🔸 BINARY EXPLOITATION: Buffer overflows, ROP chains, shellcode injection, format string bugs, heap exploitation  
+🔸 CRYPTOGRAPHY: RSA attacks, hash collisions, cipher analysis, random number weaknesses, padding oracles
+🔸 REVERSE ENGINEERING: Assembly analysis, binary unpacking, anti-debugging, malware analysis
+🔸 FORENSICS: File analysis, steganography, network packet analysis, memory dumps, timeline reconstruction
+🔸 MISC: Logic puzzles, encoding/decoding, esoteric challenges
+
+For each challenge:
+1. Identify the vulnerability type
+2. Suggest specific tools and techniques  
+3. Provide step-by-step exploitation approach
+4. Include relevant commands or code snippets when helpful
+
+Be precise, technical, and actionable. If you need more context, ask specific questions.`;
 
             const messages = [
                 { role: "system", content: "You are an expert CTF (Capture The Flag) cybersecurity assistant." },
