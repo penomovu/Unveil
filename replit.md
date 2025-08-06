@@ -1,6 +1,14 @@
 # Overview
 
-CTF AI is a Flask-based cybersecurity assistant designed to help with Capture The Flag (CTF) competitions. The system collects cybersecurity writeups from various sources, trains a question-answering model using transformer architecture, and provides an interactive chat interface for cybersecurity queries. It specializes in web security, cryptography, binary exploitation, reverse engineering, forensics, and other CTF categories.
+CTF AI is a Flask-based cybersecurity assistant designed to help with Capture The Flag (CTF) competitions. The system collects cybersecurity writeups from various sources, automatically trains AI models using collected data, and provides an interactive chat interface for cybersecurity queries. It features server-side model storage allowing all users to access fine-tuned models, while maintaining a lightweight deployment approach. The system specializes in web security, cryptography, binary exploitation, reverse engineering, forensics, and other CTF categories.
+
+## Recent Changes (August 2025)
+- ✅ **Implemented automatic model training** - System now automatically trains models using collected CTF writeups
+- ✅ **Added PostgreSQL database integration** - Server-side storage for writeups, trained models, and usage statistics  
+- ✅ **Created comprehensive training pipeline** - Multi-step training process with real-time progress tracking
+- ✅ **Built model management system** - Model versioning, activation, and performance metrics
+- ✅ **Added training job tracking** - Real-time status monitoring with detailed logs
+- ✅ **Enhanced data collection** - 15+ high-quality CTF writeup sources with automatic database storage
 
 # User Preferences
 

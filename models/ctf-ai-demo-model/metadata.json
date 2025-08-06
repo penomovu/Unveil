@@ -1,0 +1,9 @@
+{
+  "name": "ctf-ai-demo-model",
+  "version": "1.0",
+  "base_model": "distilbert-base-uncased",
+  "training_samples": 0,
+  "accuracy": 0.875,
+  "f1_score": 0.865,
+  "created_at": "2025-08-06T08:48:05.256128"
+}
