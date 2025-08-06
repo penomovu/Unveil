@@ -1,13 +1,26 @@
 {
-  "functions": {
-    "app_minimal.py": {
-      "runtime": "python3.9"
+  "builds": [
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/ask.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "api/status.py", 
+      "use": "@vercel/python"
     }
-  },
+  ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/app_minimal.py"
+      "src": "/api/ask",
+      "dest": "/api/ask.py"
+    },
+    {
+      "src": "/api/status",
+      "dest": "/api/status.py"
     },
     {
       "src": "/(.*)",
