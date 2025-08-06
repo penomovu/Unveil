@@ -1,73 +1,55 @@
 """
-Configuration settings for the CTF AI system.
+Configuration for CTF AI system with shared database
 """
 
 import os
-from datetime import datetime
 
-class Config:
-    # Model configuration
-    MODEL_NAME = "distilbert-base-uncased-distilled-squad"  # Lightweight QA model
-    MODEL_SAVE_PATH = "models/ctf_ai_model"
-    
-    # Data paths
-    DATA_DIR = "data"
-    SOURCES_FILE = "data/sources.json"
-    RAW_DATA_PATH = "data/raw_writeups.json"
-    PROCESSED_DATA_PATH = "data/processed_writeups.json"
-    EVALUATION_RESULTS_PATH = "data/evaluation_results.json"
-    
-    # Training configuration
-    MAX_LENGTH = 512
-    BATCH_SIZE = 4
-    LEARNING_RATE = 3e-5
-    NUM_EPOCHS = 3
-    WARMUP_STEPS = 100
-    
-    # Data collection settings
-    MAX_WRITEUPS_PER_SOURCE = 100
-    MIN_CONTENT_LENGTH = 100  # Minimum content length in characters
-    COLLECTION_DELAY = 1  # Delay between requests in seconds
-    
-    # Inference settings
-    MAX_ANSWER_LENGTH = 200
-    CONTEXT_WINDOW = 1000
-    CONFIDENCE_THRESHOLD = 0.3
-    
-    # Logging
-    LOG_LEVEL = "INFO"
-    LOG_FILE = "logs/ctf_ai.log"
-    
-    @staticmethod
-    def get_timestamp():
-        """Get current timestamp string."""
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    @staticmethod
-    def ensure_directories():
-        """Ensure all necessary directories exist."""
-        directories = [
-            Config.DATA_DIR,
-            "models",
-            "logs",
-            os.path.dirname(Config.MODEL_SAVE_PATH)
-        ]
-        
-        for directory in directories:
-            os.makedirs(directory, exist_ok=True)
+# Shared database configuration (server-side)
+# Use a free external database service like Supabase, Neon, or PlanetScale
+SHARED_DATABASE_URL = os.environ.get('SHARED_DATABASE_URL', 
+    # Default to local PostgreSQL if available
+    f'postgresql://{os.environ.get("PGUSER", "postgres")}:{os.environ.get("PGPASSWORD", "password")}@{os.environ.get("PGHOST", "localhost")}:{os.environ.get("PGPORT", "5432")}/{os.environ.get("PGDATABASE", "ctfai")}'
+)
 
-# Environment-specific configurations
-class DevelopmentConfig(Config):
-    DEBUG = True
-    MAX_WRITEUPS_PER_SOURCE = 10  # Smaller dataset for development
+# Model configuration with large context window
+MODEL_CONFIG = {
+    'base_model': 'microsoft/DialoGPT-large',  # Large context window model
+    'max_length': 4096,  # Large context window
+    'training_enabled': True,
+    'auto_train': True,  # Automatic training
+    'training_interval': 24 * 60 * 60,  # Train daily (in seconds)
+}
 
-class ProductionConfig(Config):
-    DEBUG = False
-    MAX_WRITEUPS_PER_SOURCE = 1000
+# Data collection sources
+DATA_SOURCES = [
+    {
+        'type': 'github',
+        'url': 'https://github.com/DaffaInfo/ctf-writeup',
+        'name': 'DaffaInfo CTF Writeups'
+    },
+    {
+        'type': 'github', 
+        'url': 'https://github.com/siunam321/siunam321.github.io',
+        'name': 'siunam321 CTF Writeups'
+    },
+    {
+        'type': 'website',
+        'url': 'https://ctftime.org/writeups',
+        'name': 'CTFtime Writeups'
+    }
+]
 
-# Select configuration based on environment
-config_name = os.getenv('FLASK_ENV', 'development')
-if config_name == 'production':
-    config = ProductionConfig
-else:
-    config = DevelopmentConfig
+# File upload configuration
+UPLOAD_CONFIG = {
+    'max_file_size': 10 * 1024 * 1024,  # 10MB
+    'allowed_extensions': {'.txt', '.md', '.pdf', '.json'},
+    'upload_folder': 'uploads'
+}
+
+# System settings
+SYSTEM_CONFIG = {
+    'debug': True,
+    'host': '0.0.0.0',
+    'port': 5000,
+    'secret_key': os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
+}

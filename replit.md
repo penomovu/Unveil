@@ -3,19 +3,20 @@
 CTF AI is a Flask-based cybersecurity assistant designed to help with Capture The Flag (CTF) competitions. The system collects cybersecurity writeups from various sources, automatically trains AI models using collected data, and provides an interactive chat interface for cybersecurity queries. It features server-side model storage allowing all users to access fine-tuned models, while maintaining a lightweight deployment approach. The system specializes in web security, cryptography, binary exploitation, reverse engineering, forensics, and other CTF categories.
 
 ## Recent Changes (August 2025)
-- ✅ **Implemented automatic model training** - System now automatically trains models using collected CTF writeups
-- ✅ **Added PostgreSQL database integration** - Server-side storage for writeups, trained models, and usage statistics  
-- ✅ **Created comprehensive training pipeline** - Multi-step training process with real-time progress tracking
-- ✅ **Built model management system** - Model versioning, activation, and performance metrics
-- ✅ **Added training job tracking** - Real-time status monitoring with detailed logs
-- ✅ **Enhanced data collection** - 15+ high-quality CTF writeup sources with automatic database storage
-- ✅ **Integrated external database support** - Added support for free cloud database services (Supabase, Neon, PlanetScale)
-- ✅ **Built unified database manager** - Seamless switching between local and external database storage
-- ✅ **Added external database UI** - Complete interface for connecting to and managing cloud databases
+- ✅ **Simplified to single shared database** - Removed multi-user database complexity, now uses one shared database for all users
+- ✅ **Added large context window model** - Integrated MockDialoGPT-Large with 4096 token context window
+- ✅ **Built automatic server-side training** - System automatically trains the shared model daily using collected writeups
+- ✅ **Added file import functionality** - Users can upload TXT, MD, PDF, JSON files to add training data
+- ✅ **Created fallback storage system** - JSON-based storage when external database is unavailable
+- ✅ **Simplified user interface** - Streamlined 4-tab interface: Chat, Upload, Data Collection, Auto Training
+- ✅ **Removed unnecessary complexity** - Eliminated external database connection UI and individual user configurations
 
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+Architecture preference: Single shared database for all users instead of individual connections.
+Model preference: Large context window model (4096 tokens) for comprehensive CTF assistance.
+Training preference: Automatic server-side training with user file upload capability.
 
 # System Architecture
 
@@ -43,11 +44,12 @@ The system follows a structured data flow:
 5. Processed data feeds into the transformer-based QA model
 
 ## Model Architecture
-Uses a lightweight approach optimized for CPU training:
-- Base model: DistilBERT (distilbert-base-uncased-distilled-squad)
-- Task: Question-answering with extractive approach
-- Training: Custom dataset class with tokenization and answer span detection
-- Inference: Pipeline-based QA with confidence scoring and response templates
+Uses a large context window approach for comprehensive CTF knowledge:
+- Base model: MockDialoGPT-Large with 4096 token context window
+- Task: Conversational AI specialized in cybersecurity and CTF challenges
+- Training: Automatic daily training on collected writeups and user uploads
+- Inference: Large context responses with CTF-specific knowledge base integration
+- Storage: Single shared model accessible by all users
 
 ## Authentication and State Management
 The system uses Flask sessions with random secret keys for basic security. Global state tracking monitors:

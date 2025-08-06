@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "name": "CTF-AI-MockLarge",
+    "version": "v1.0",
+    "model_type": "MockDialoGPT-Large-4K",
+    "model_data": "{\"model_type\": \"mock\", \"writeup_count\": 0}",
+    "config_data": "{\"base_model\": \"MockDialoGPT-Large-4K\", \"context_window\": 4096, \"created_at\": \"2025-08-06T09:21:50.035350\"}",
+    "is_active": true,
+    "created_at": "2025-08-06T09:21:50.035409",
+    "download_count": 0
+  }
+]

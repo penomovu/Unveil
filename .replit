@@ -14,15 +14,41 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Simple CTF AI"
+args = "Simplified CTF AI"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Minimal CTF AI"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "CTF AI Minimal"
 
 [[workflows.workflow]]
-name = "Simple CTF AI"
+name = "Simplified CTF AI"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python simple_app.py"
+args = "python app_simplified.py"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Minimal CTF AI"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python app_minimal.py"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "CTF AI Minimal"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python app_minimal.py"
 waitForPort = 5000
 
 [[ports]]

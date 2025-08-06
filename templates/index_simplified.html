@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTF AI - Simplified</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.css" rel="stylesheet">
+    <link href="/static/style_simplified.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+                <div class="position-sticky pt-3">
+                    <h4 class="text-white mb-4">CTF AI</h4>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-tab="chat">
+                                <i data-feather="message-circle"></i>
+                                Chat
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-tab="upload">
+                                <i data-feather="upload"></i>
+                                Upload Files
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-tab="data">
+                                <i data-feather="database"></i>
+                                Data Collection
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-tab="training">
+                                <i data-feather="cpu"></i>
+                                Auto Training
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <!-- Status Panel -->
+                    <div class="mt-4 p-3 bg-secondary rounded">
+                        <h6 class="text-white">System Status</h6>
+                        <div id="status-panel">
+                            <div class="status-item">
+                                <span class="status-label">Model:</span>
+                                <span id="model-status" class="badge bg-secondary">Loading...</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Training:</span>
+                                <span id="training-status" class="badge bg-secondary">Ready</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Data:</span>
+                                <span id="data-status" class="badge bg-secondary">0 writeups</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                
+                <!-- Chat Tab -->
+                <div id="chat-tab" class="tab-content active">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">CTF AI Assistant</h1>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Ask me anything about CTF challenges!</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chat-messages" class="chat-messages mb-3">
+                                        <div class="message bot-message">
+                                            <div class="message-content">
+                                                Hello! I'm your CTF AI assistant. I've been trained on thousands of CTF writeups and can help you with cybersecurity challenges. Ask me anything!
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="input-group">
+                                        <input type="text" id="user-input" class="form-control" placeholder="Ask a question about CTFs...">
+                                        <button id="send-btn" class="btn btn-primary">
+                                            <i data-feather="send"></i> Send
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Tab -->
+                <div id="upload-tab" class="tab-content">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Upload Files</h1>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Import CTF Writeups</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="file-input" class="form-label">Select files to upload</label>
+                                        <input type="file" id="file-input" class="form-control" multiple accept=".txt,.md,.pdf,.json">
+                                        <div class="form-text">
+                                            Supported formats: TXT, MD, PDF, JSON (Max 10MB per file)
+                                        </div>
+                                    </div>
+                                    
+                                    <button id="upload-btn" class="btn btn-success">
+                                        <i data-feather="upload-cloud"></i> Upload Files
+                                    </button>
+                                    
+                                    <div id="upload-progress" class="mt-3" style="display: none;">
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="upload-results" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Collection Tab -->
+                <div id="data-tab" class="tab-content">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Data Collection</h1>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Automatic Data Sources</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>The system automatically collects CTF writeups from these sources:</p>
+                                    
+                                    <ul class="list-group mb-3">
+                                        <li class="list-group-item">
+                                            <strong>DaffaInfo CTF Writeups</strong><br>
+                                            <small class="text-muted">GitHub repository with 500+ writeups</small>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>siunam321 CTF Writeups</strong><br>
+                                            <small class="text-muted">Personal collection with detailed tutorials</small>
+                                        </li>
+                                        <li class="list-group-item">
+                                            <strong>CTFtime Writeups</strong><br>
+                                            <small class="text-muted">Official CTF competition writeups</small>
+                                        </li>
+                                    </ul>
+                                    
+                                    <button id="collect-btn" class="btn btn-primary">
+                                        <i data-feather="download"></i> Collect New Data
+                                    </button>
+                                    
+                                    <div id="collection-results" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Tab -->
+                <div id="training-tab" class="tab-content">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Automatic Training</h1>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Model Training Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h6>Current Model</h6>
+                                            <div class="bg-light p-3 rounded">
+                                                <strong>Microsoft DialoGPT-Large</strong><br>
+                                                <small class="text-muted">Large context window (4096 tokens)</small><br>
+                                                <small class="text-muted">Auto-training: Every 24 hours</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Training Stats</h6>
+                                            <div class="bg-light p-3 rounded">
+                                                <div>Last Training: <span id="last-training">Never</span></div>
+                                                <div>Status: <span id="training-status-detail">Ready</span></div>
+                                                <div>Data Count: <span id="training-data-count">0</span> writeups</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button id="manual-train-btn" class="btn btn-success">
+                                        <i data-feather="play"></i> Start Manual Training
+                                    </button>
+                                    
+                                    <div id="training-progress" class="mt-3" style="display: none;">
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted">Training in progress...</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js"></script>
+    <script src="/static/script_simplified.js"></script>
+</body>
+</html>
