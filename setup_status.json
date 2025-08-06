@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-08-06T09:41:57.289242",
+  "database_status": {
+    "status": "missing",
+    "message": "No database URL configured"
+  },
+  "environment_vars": {
+    "SECRET_KEY": false,
+    "DATABASE_URL": false,
+    "SHARED_DATABASE_URL": false,
+    "MODEL_NAME": false,
+    "HOST": false,
+    "PORT": false
+  },
+  "files_present": {
+    "app_minimal.py": true,
+    "client_ai_engine.py": true,
+    "config.py": true,
+    "fallback_storage.py": true,
+    "shared_db.py": true
+  },
+  "setup_complete": false
+}
