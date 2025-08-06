@@ -283,3 +283,153 @@ class DatabaseManager:
 
 # All database operations now use direct SQL through DatabaseManager and ExternalDatabaseManager classes
 # Flask-SQLAlchemy models removed to avoid dependency issues
+    # Store trained AI models and their metadata
+    __tablename__ = 'trained_models'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    version = db.Column(db.String(50), nullable=False)
+    base_model = db.Column(db.String(200), nullable=False)  # e.g., 'distilbert-base-uncased'
+    model_path = db.Column(db.String(500), nullable=False)  # Path to saved model
+    config_path = db.Column(db.String(500))  # Path to model config
+    tokenizer_path = db.Column(db.String(500))  # Path to tokenizer
+    
+    # Training metadata
+    training_started = db.Column(db.DateTime, default=datetime.utcnow)
+    training_completed = db.Column(db.DateTime)
+    training_duration = db.Column(db.Float)  # In seconds
+    num_training_samples = db.Column(db.Integer)
+    num_validation_samples = db.Column(db.Integer)
+    
+    # Performance metrics
+    accuracy = db.Column(db.Float)
+    f1_score = db.Column(db.Float)
+    exact_match = db.Column(db.Float)
+    validation_loss = db.Column(db.Float)
+    
+    # Model status
+    status = db.Column(db.String(50), default='training')  # 'training', 'completed', 'failed', 'active'
+    is_active = db.Column(db.Boolean, default=False)  # Currently loaded model
+    download_count = db.Column(db.Integer, default=0)
+    
+    # Additional metadata
+    description = db.Column(db.Text)
+    training_config = db.Column(db.Text)  # JSON string of training parameters
+    created_by = db.Column(db.String(100), default='system')
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'version': self.version,
+            'base_model': self.base_model,
+            'model_path': self.model_path,
+            'training_started': self.training_started.isoformat() if self.training_started else None,
+            'training_completed': self.training_completed.isoformat() if self.training_completed else None,
+            'training_duration': self.training_duration,
+            'num_training_samples': self.num_training_samples,
+            'num_validation_samples': self.num_validation_samples,
+            'accuracy': self.accuracy,
+            'f1_score': self.f1_score,
+            'exact_match': self.exact_match,
+            'validation_loss': self.validation_loss,
+            'status': self.status,
+            'is_active': self.is_active,
+            'download_count': self.download_count,
+            'description': self.description,
+            'training_config': json.loads(self.training_config) if self.training_config else {},
+            'created_by': self.created_by
+        }
+
+class TrainingJob(db.Model):
+    """Track training jobs and their progress"""
+    __tablename__ = 'training_jobs'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.String(100), unique=True, nullable=False)
+    model_name = db.Column(db.String(200), nullable=False)
+    status = db.Column(db.String(50), default='queued')  # 'queued', 'running', 'completed', 'failed'
+    progress = db.Column(db.Float, default=0.0)  # 0-100
+    current_step = db.Column(db.String(200))
+    total_steps = db.Column(db.Integer)
+    
+    # Job metadata
+    started_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    error_message = db.Column(db.Text)
+    logs = db.Column(db.Text)  # Training logs
+    
+    # Results
+    trained_model_id = db.Column(db.Integer, db.ForeignKey('trained_models.id'))
+    trained_model = db.relationship('TrainedModel', backref='training_job')
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'job_id': self.job_id,
+            'model_name': self.model_name,
+            'status': self.status,
+            'progress': self.progress,
+            'current_step': self.current_step,
+            'total_steps': self.total_steps,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'error_message': self.error_message,
+            'trained_model_id': self.trained_model_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+class ModelUsageStats(db.Model):
+    """Track model usage statistics"""
+    __tablename__ = 'model_usage_stats'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    model_id = db.Column(db.Integer, db.ForeignKey('trained_models.id'), nullable=False)
+    model = db.relationship('TrainedModel', backref='usage_stats')
+    
+    # Usage metrics
+    query_count = db.Column(db.Integer, default=0)
+    total_response_time = db.Column(db.Float, default=0.0)  # Total time in seconds
+    successful_queries = db.Column(db.Integer, default=0)
+    failed_queries = db.Column(db.Integer, default=0)
+    
+    # Performance tracking
+    average_response_time = db.Column(db.Float)
+    success_rate = db.Column(db.Float)
+    
+    # Time tracking
+    last_used = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def update_stats(self, response_time, success=True):
+        """Update usage statistics"""
+        self.query_count += 1
+        self.total_response_time += response_time
+        
+        if success:
+            self.successful_queries += 1
+        else:
+            self.failed_queries += 1
+            
+        self.average_response_time = self.total_response_time / self.query_count
+        self.success_rate = self.successful_queries / self.query_count
+        self.last_used = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
+        
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'model_id': self.model_id,
+            'query_count': self.query_count,
+            'average_response_time': self.average_response_time,
+            'success_rate': self.success_rate,
+            'successful_queries': self.successful_queries,
+            'failed_queries': self.failed_queries,
+            'last_used': self.last_used.isoformat() if self.last_used else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+"""

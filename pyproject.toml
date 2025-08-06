@@ -8,6 +8,8 @@ dependencies = [
     "flask>=2.3.0",
     "requests>=2.28.0",
     "beautifulsoup4>=4.11.0",
+    "mysql-connector-python",
+    "psycopg2-binary",
 ]
 
 [[tool.uv.index]]

@@ -24,36 +24,103 @@ logger = logging.getLogger(__name__)
 try:
     from models import init_database, DatabaseManager
     DATABASE_AVAILABLE = True
-    logger.info("Database functionality available")
+    logger.info("Local database functionality available")
 except ImportError as e:
     DATABASE_AVAILABLE = False
-    logger.warning(f"Database not available: {e}")
+    logger.warning(f"Local database not available: {e}")
+    DatabaseManager = None
+
+# Import external database functionality
+try:
+    from external_db import ExternalDatabaseManager, get_external_db
+    EXTERNAL_DB_AVAILABLE = True
+    logger.info("External database functionality available")
+except ImportError as e:
+    EXTERNAL_DB_AVAILABLE = False
+    logger.warning(f"External database not available: {e}")
+    ExternalDatabaseManager = None
+
+# Create unified database interface
+class UnifiedDatabaseManager:
+    """Manages both local and external database connections"""
     
-    # Create a simple fallback DatabaseManager
-    class DatabaseManager:
-        @staticmethod
-        def save_writeup(title, content, source, url=None, category=None, tags=None, difficulty=None):
+    def __init__(self):
+        self.local_db = DatabaseManager if DATABASE_AVAILABLE else None
+        self.external_db = get_external_db() if EXTERNAL_DB_AVAILABLE else None
+        self.use_external = False
+    
+    def set_external_connection(self, db_type, connection_string):
+        """Set up external database connection"""
+        if not self.external_db:
+            return {"error": "External database not available"}
+        
+        success = False
+        if db_type == 'supabase':
+            success = self.external_db.connect_supabase(connection_string)
+        elif db_type == 'neon':
+            success = self.external_db.connect_neon(connection_string)
+        elif db_type == 'planetscale':
+            success = self.external_db.connect_planetscale(connection_string)
+        
+        if success:
+            self.external_db.init_schema()
+            self.use_external = True
+            return {"success": True, "message": f"Connected to {db_type} database"}
+        else:
+            return {"error": f"Failed to connect to {db_type} database"}
+    
+    def save_model(self, name, version, base_model, model_data, **kwargs):
+        """Save model to external database if available, otherwise local"""
+        if self.use_external and self.external_db:
+            return self.external_db.save_model(name, version, base_model, model_data, **kwargs)
+        elif self.local_db:
+            # For local storage, adapt the interface
+            model_path = kwargs.get('model_path', f"./models/{name}")
+            return self.local_db.save_model(name, version, base_model, model_path, **kwargs)
+        else:
             return 1  # Mock ID
-        
-        @staticmethod
-        def get_writeups(limit=None, category=None, processed=None):
+    
+    def get_models(self, status=None, is_active=None):
+        """Get models from external database if available, otherwise local"""
+        if self.use_external and self.external_db:
+            return self.external_db.get_models(status, is_active)
+        elif self.local_db:
+            return self.local_db.get_models(status, is_active)
+        else:
             return []
+    
+    def set_active_model(self, model_id):
+        """Set active model in external database if available, otherwise local"""
+        if self.use_external and self.external_db:
+            return self.external_db.set_active_model(model_id)
+        elif self.local_db:
+            return self.local_db.set_active_model(model_id)
+    
+    def update_usage_stats(self, model_id, response_time, success=True):
+        """Update usage stats in external database if available, otherwise local"""
+        if self.use_external and self.external_db:
+            self.external_db.update_usage_stats(model_id, response_time, success)
+        elif self.local_db:
+            self.local_db.update_usage_stats(model_id, response_time, success)
+    
+    def get_connection_status(self):
+        """Get current database connection status"""
+        status = {
+            "local_available": self.local_db is not None,
+            "external_available": self.external_db is not None,
+            "external_connected": False,
+            "using_external": self.use_external,
+            "external_type": None
+        }
         
-        @staticmethod
-        def save_model(name, version, base_model, model_path, **kwargs):
-            return 1  # Mock ID
+        if self.external_db:
+            status["external_connected"] = self.external_db.test_connection()
+            status["external_type"] = self.external_db.db_type
         
-        @staticmethod
-        def get_models(status=None, is_active=None):
-            return []
-        
-        @staticmethod
-        def set_active_model(model_id):
-            pass
-        
-        @staticmethod
-        def update_usage_stats(model_id, response_time, success=True):
-            pass
+        return status
+
+# Initialize unified database manager
+db_manager = UnifiedDatabaseManager()
 
 
 
@@ -133,7 +200,9 @@ class ModelTrainer:
             system_state['training_status'] = 'training'
             
             # Get training data from database
-            writeups = DatabaseManager.get_writeups()
+            writeups = []
+            if db_manager.local_db:
+                writeups = db_manager.local_db.get_writeups()
             job['logs'].append(f"Loaded {len(writeups)} writeups for training")
             job['progress'] = 20
             
@@ -173,24 +242,41 @@ class ModelTrainer:
             with open(f"{model_dir}/metadata.json", 'w') as f:
                 json.dump(model_metadata, f, indent=2)
                 
-            # Save to database
-            if DATABASE_AVAILABLE:
-                model_id = DatabaseManager.save_model(
+            # Save to database (external or local)
+            try:
+                # Prepare model files for external storage if using external DB
+                model_files = None
+                if db_manager.use_external:
+                    # Create mock binary data for demonstration
+                    model_files = {
+                        'model': b'mock_model_binary_data_' + model_name.encode(),
+                        'config': json.dumps(model_metadata).encode(),
+                        'tokenizer': b'mock_tokenizer_data'
+                    }
+                
+                model_id = db_manager.save_model(
                     name=model_name,
                     version='1.0',
                     base_model='distilbert-base-uncased',
+                    model_data=model_files,
                     model_path=model_dir,
                     training_completed=datetime.now(),
                     num_training_samples=len(writeups),
                     accuracy=model_metadata['accuracy'],
                     f1_score=model_metadata['f1_score'],
                     status='completed',
-                    description=f"Automatically trained CTF AI model on {len(writeups)} writeups"
+                    description=f"Automatically trained CTF AI model on {len(writeups)} writeups",
+                    file_size_mb=2.5  # Mock size
                 )
                 
                 # Set as active model
-                DatabaseManager.set_active_model(model_id)
+                db_manager.set_active_model(model_id)
                 system_state['active_model_id'] = model_id
+                job['logs'].append(f"Model saved to {'external' if db_manager.use_external else 'local'} database with ID {model_id}")
+                
+            except Exception as e:
+                job['logs'].append(f"Warning: Could not save to database: {e}")
+                logger.warning(f"Database save failed: {e}")
                 
             # Update job completion
             job['status'] = 'completed'
@@ -737,6 +823,69 @@ def add_data_source():
         return jsonify({'message': 'Data source added successfully'})
     except Exception as e:
         return jsonify({'error': f'Failed to add source: {str(e)}'}), 500
+
+@app.route('/api/external-db/connect', methods=['POST'])
+def connect_external_db():
+    """Connect to an external database service."""
+    data = request.get_json()
+    if not data or 'db_type' not in data or 'connection_string' not in data:
+        return jsonify({'error': 'Missing required fields: db_type, connection_string'}), 400
+    
+    db_type = data['db_type']
+    connection_string = data['connection_string']
+    
+    if db_type not in ['supabase', 'neon', 'planetscale']:
+        return jsonify({'error': 'Supported database types: supabase, neon, planetscale'}), 400
+    
+    try:
+        result = db_manager.set_external_connection(db_type, connection_string)
+        if 'error' in result:
+            return jsonify(result), 400
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': f'Connection failed: {str(e)}'}), 500
+
+@app.route('/api/external-db/status')
+def external_db_status():
+    """Get external database connection status."""
+    try:
+        status = db_manager.get_connection_status()
+        return jsonify(status)
+    except Exception as e:
+        return jsonify({'error': f'Failed to get status: {str(e)}'}), 500
+
+@app.route('/api/external-db/models')
+def get_external_models():
+    """Get models from external database."""
+    try:
+        models = db_manager.get_models()
+        
+        # Convert datetime objects to ISO format for JSON serialization
+        for model in models:
+            for key, value in model.items():
+                if hasattr(value, 'isoformat'):
+                    model[key] = value.isoformat()
+        
+        return jsonify({
+            'models': models,
+            'count': len(models),
+            'database_type': db_manager.external_db.db_type if db_manager.use_external else 'local'
+        })
+    except Exception as e:
+        return jsonify({'error': f'Failed to get models: {str(e)}'}), 500
+
+@app.route('/api/external-db/disconnect', methods=['POST'])
+def disconnect_external_db():
+    """Disconnect from external database."""
+    try:
+        if db_manager.external_db:
+            db_manager.external_db.close()
+            db_manager.use_external = False
+        
+        return jsonify({'message': 'Disconnected from external database'})
+    except Exception as e:
+        return jsonify({'error': f'Disconnect failed: {str(e)}'}), 500
 
 @app.route('/api/train-model', methods=['POST'])
 def start_model_training():

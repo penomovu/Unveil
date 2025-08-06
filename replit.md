@@ -9,6 +9,9 @@ CTF AI is a Flask-based cybersecurity assistant designed to help with Capture Th
 - ✅ **Built model management system** - Model versioning, activation, and performance metrics
 - ✅ **Added training job tracking** - Real-time status monitoring with detailed logs
 - ✅ **Enhanced data collection** - 15+ high-quality CTF writeup sources with automatic database storage
+- ✅ **Integrated external database support** - Added support for free cloud database services (Supabase, Neon, PlanetScale)
+- ✅ **Built unified database manager** - Seamless switching between local and external database storage
+- ✅ **Added external database UI** - Complete interface for connecting to and managing cloud databases
 
 # User Preferences
 
@@ -96,9 +99,29 @@ The system is configured to collect from 15+ high-quality CTF writeup sources:
 - PortSwigger Labs (comprehensive web security)
 - Advanced topics: kernel exploitation, heap challenges, client-side web
 
-## File Storage
-All data is stored locally in JSON format:
-- Raw and processed writeup data
-- Model checkpoints and training artifacts
+## Database Storage
+
+The system supports both local and external database storage:
+
+**Local Storage (PostgreSQL):**
+- Requires PostgreSQL installation on Replit
+- Tables: writeups, trained models, training jobs, usage statistics
+- Used when no external database is connected
+
+**External Database Support:**
+- **Supabase** (PostgreSQL): 500MB free tier with real-time features
+- **Neon** (PostgreSQL): 512MB free tier with database branching
+- **PlanetScale** (MySQL): 5GB free tier with serverless scaling
+
+**Model Storage Features:**
+- Binary model data storage (weights, configurations, tokenizers)
+- Model versioning and metadata tracking
+- Training progress and performance metrics
+- Usage statistics and download counts
+- Active model management across database types
+
+**File Storage (Fallback):**
+- Raw and processed writeup data in JSON format
+- Model checkpoints and training artifacts as local files
 - Evaluation results and performance metrics
 - Source configurations and system logs

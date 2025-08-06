@@ -48,6 +48,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link text-white" href="#" data-tab="external-db">
+                                <i data-feather="database" class="me-2"></i>
+                                External Database
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-white" href="#" data-tab="settings">
                                 <i data-feather="settings" class="me-2"></i>
                                 Settings
@@ -308,6 +314,123 @@
                                     <div id="evaluation-results">
                                         <p class="text-muted">No evaluation results available. Train a model and run evaluation.</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- External Database Tab -->
+                <div id="external-db-tab" class="tab-content">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">External Database</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button id="db-connect-btn" class="btn btn-primary me-2">
+                                <i data-feather="cloud" class="me-1"></i>
+                                Connect
+                            </button>
+                            <button id="db-disconnect-btn" class="btn btn-outline-danger" disabled>
+                                <i data-feather="cloud-off" class="me-1"></i>
+                                Disconnect
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Connection Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="db-status-info">
+                                        <div class="status-item">
+                                            <span class="text-muted">Local Database:</span>
+                                            <span id="local-db-status" class="badge bg-secondary">Unknown</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="text-muted">External Database:</span>
+                                            <span id="external-db-status" class="badge bg-secondary">Disconnected</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="text-muted">Database Type:</span>
+                                            <span id="db-type-info" class="text-muted">None</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="text-muted">Using External:</span>
+                                            <span id="using-external" class="badge bg-secondary">No</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h5>Connection Setup</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="db-connection-form">
+                                        <div class="mb-3">
+                                            <label for="db-type-select" class="form-label">Database Type</label>
+                                            <select class="form-select" id="db-type-select" required>
+                                                <option value="">Select database service...</option>
+                                                <option value="supabase">Supabase (PostgreSQL)</option>
+                                                <option value="neon">Neon (PostgreSQL)</option>
+                                                <option value="planetscale">PlanetScale (MySQL)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="connection-string" class="form-label">Connection String</label>
+                                            <textarea class="form-control" id="connection-string" rows="3" 
+                                                placeholder="postgresql://user:pass@host:port/database" required></textarea>
+                                            <div class="form-text">Enter your database connection string from your cloud provider.</div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Connect to Database</button>
+                                    </form>
+                                    
+                                    <div class="mt-3" id="db-message-area"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Stored Models</h5>
+                                    <button class="btn btn-sm btn-outline-primary" id="refresh-models-btn">
+                                        <i data-feather="refresh-cw"></i> Refresh
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="external-models-list">
+                                        <p class="text-muted">Connect to external database to view stored models.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h5>Free Database Providers</h5>
+                                </div>
+                                <div class="card-body">
+                                    <h6>Recommended Services:</h6>
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2">
+                                            <strong>Supabase:</strong>
+                                            <br><small class="text-muted">500MB free PostgreSQL with real-time features</small>
+                                            <br><a href="https://supabase.com" target="_blank" class="btn btn-sm btn-outline-info mt-1">Visit Supabase</a>
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>Neon:</strong>
+                                            <br><small class="text-muted">512MB free PostgreSQL with branching</small>
+                                            <br><a href="https://neon.tech" target="_blank" class="btn btn-sm btn-outline-info mt-1">Visit Neon</a>
+                                        </li>
+                                        <li class="mb-2">
+                                            <strong>PlanetScale:</strong>
+                                            <br><small class="text-muted">5GB free MySQL with serverless scaling</small>
+                                            <br><a href="https://planetscale.com" target="_blank" class="btn btn-sm btn-outline-info mt-1">Visit PlanetScale</a>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>

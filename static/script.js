@@ -47,6 +47,9 @@ class CTFAIApp {
         // Evaluation
         this.setupEvaluationListeners();
         
+        // External Database
+        this.setupExternalDbListeners();
+        
         // Settings
         this.setupSettingsListeners();
     }
@@ -681,6 +684,228 @@ class CTFAIApp {
             'Very Poor': 'bg-danger'
         };
         return classes[level] || 'bg-secondary';
+    }
+
+    // External Database functionality
+    setupExternalDbListeners() {
+        const connectBtn = document.getElementById('db-connect-btn');
+        const disconnectBtn = document.getElementById('db-disconnect-btn');
+        const connectionForm = document.getElementById('db-connection-form');
+        const refreshModelsBtn = document.getElementById('refresh-models-btn');
+
+        if (connectionForm) {
+            connectionForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.connectExternalDatabase();
+            });
+        }
+
+        if (connectBtn) {
+            connectBtn.addEventListener('click', () => this.connectExternalDatabase());
+        }
+
+        if (disconnectBtn) {
+            disconnectBtn.addEventListener('click', () => this.disconnectExternalDatabase());
+        }
+
+        if (refreshModelsBtn) {
+            refreshModelsBtn.addEventListener('click', () => this.refreshExternalModels());
+        }
+
+        // Load initial external DB status
+        this.updateExternalDbStatus();
+    }
+
+    async connectExternalDatabase() {
+        const dbType = document.getElementById('db-type-select').value;
+        const connectionString = document.getElementById('connection-string').value;
+        const messageArea = document.getElementById('db-message-area');
+        const connectBtn = document.getElementById('db-connect-btn');
+
+        if (!dbType || !connectionString) {
+            this.showMessage(messageArea, 'Please select a database type and enter connection string', 'error');
+            return;
+        }
+
+        connectBtn.disabled = true;
+        connectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connecting...';
+
+        try {
+            const response = await fetch('/api/external-db/connect', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    db_type: dbType,
+                    connection_string: connectionString
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                this.showMessage(messageArea, result.message, 'success');
+                this.showNotification(`Connected to ${dbType} database`, 'success');
+                this.updateExternalDbStatus();
+                this.refreshExternalModels();
+                document.getElementById('db-disconnect-btn').disabled = false;
+            } else {
+                this.showMessage(messageArea, result.error, 'error');
+                this.showNotification('Connection failed', 'error');
+            }
+
+        } catch (error) {
+            console.error('Connection error:', error);
+            this.showMessage(messageArea, 'Connection failed: Network error', 'error');
+            this.showNotification('Connection failed', 'error');
+        } finally {
+            connectBtn.disabled = false;
+            connectBtn.innerHTML = '<i data-feather="cloud" class="me-1"></i>Connect';
+            feather.replace();
+        }
+    }
+
+    async disconnectExternalDatabase() {
+        const disconnectBtn = document.getElementById('db-disconnect-btn');
+        const messageArea = document.getElementById('db-message-area');
+
+        disconnectBtn.disabled = true;
+        disconnectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Disconnecting...';
+
+        try {
+            const response = await fetch('/api/external-db/disconnect', {
+                method: 'POST'
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                this.showMessage(messageArea, 'Disconnected from external database', 'success');
+                this.showNotification('Disconnected successfully', 'success');
+                this.updateExternalDbStatus();
+                this.clearExternalModels();
+            } else {
+                this.showMessage(messageArea, result.error, 'error');
+            }
+
+        } catch (error) {
+            console.error('Disconnect error:', error);
+            this.showMessage(messageArea, 'Disconnect failed: Network error', 'error');
+        } finally {
+            disconnectBtn.innerHTML = '<i data-feather="cloud-off" class="me-1"></i>Disconnect';
+            feather.replace();
+        }
+    }
+
+    async updateExternalDbStatus() {
+        try {
+            const response = await fetch('/api/external-db/status');
+            const status = await response.json();
+
+            if (response.ok) {
+                // Update status indicators
+                document.getElementById('local-db-status').textContent = status.local_available ? 'Available' : 'Unavailable';
+                document.getElementById('local-db-status').className = `badge ${status.local_available ? 'bg-success' : 'bg-danger'}`;
+
+                document.getElementById('external-db-status').textContent = status.external_connected ? 'Connected' : 'Disconnected';
+                document.getElementById('external-db-status').className = `badge ${status.external_connected ? 'bg-success' : 'bg-secondary'}`;
+
+                document.getElementById('db-type-info').textContent = status.external_type || 'None';
+                
+                document.getElementById('using-external').textContent = status.using_external ? 'Yes' : 'No';
+                document.getElementById('using-external').className = `badge ${status.using_external ? 'bg-success' : 'bg-secondary'}`;
+
+                // Update button states
+                document.getElementById('db-disconnect-btn').disabled = !status.external_connected;
+            }
+        } catch (error) {
+            console.error('Error updating external DB status:', error);
+        }
+    }
+
+    async refreshExternalModels() {
+        const modelsContainer = document.getElementById('external-models-list');
+        const refreshBtn = document.getElementById('refresh-models-btn');
+
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        try {
+            const response = await fetch('/api/external-db/models');
+            const result = await response.json();
+
+            if (response.ok) {
+                this.displayExternalModels(result.models, result.database_type);
+            } else {
+                modelsContainer.innerHTML = `<p class="text-danger">Error: ${result.error}</p>`;
+            }
+        } catch (error) {
+            console.error('Error fetching models:', error);
+            modelsContainer.innerHTML = '<p class="text-danger">Error fetching models</p>';
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i data-feather="refresh-cw"></i> Refresh';
+            feather.replace();
+        }
+    }
+
+    displayExternalModels(models, dbType) {
+        const modelsContainer = document.getElementById('external-models-list');
+
+        if (!models || models.length === 0) {
+            modelsContainer.innerHTML = '<p class="text-muted">No models found in the database.</p>';
+            return;
+        }
+
+        const modelsHtml = models.map(model => `
+            <div class="card mb-2">
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title mb-1">${this.escapeHtml(model.name)}</h6>
+                            <small class="text-muted">
+                                Version: ${model.version} | 
+                                Accuracy: ${(model.accuracy * 100 || 0).toFixed(1)}%
+                                ${model.is_active ? ' | <span class="badge bg-success">Active</span>' : ''}
+                            </small>
+                        </div>
+                        <small class="text-muted">
+                            ${model.file_size_mb ? `${model.file_size_mb.toFixed(1)}MB` : ''}
+                        </small>
+                    </div>
+                    <div class="mt-1">
+                        <small class="text-muted">
+                            Created: ${this.formatTimestamp(model.created_at)}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        modelsContainer.innerHTML = `
+            <div class="mb-2">
+                <small class="text-muted">Found ${models.length} models in ${dbType} database</small>
+            </div>
+            ${modelsHtml}
+        `;
+    }
+
+    clearExternalModels() {
+        const modelsContainer = document.getElementById('external-models-list');
+        modelsContainer.innerHTML = '<p class="text-muted">Connect to external database to view stored models.</p>';
+    }
+
+    showMessage(container, message, type) {
+        if (!container) return;
+        
+        const alertClass = this.getBootstrapAlertClass(type);
+        container.innerHTML = `
+            <div class="alert alert-${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
     }
 
     // Settings functionality
