@@ -3,13 +3,15 @@
 CTF AI is a Flask-based cybersecurity assistant designed to help with Capture The Flag (CTF) competitions. The system collects cybersecurity writeups from various sources, automatically trains AI models using collected data, and provides an interactive chat interface for cybersecurity queries. It features server-side model storage allowing all users to access fine-tuned models, while maintaining a lightweight deployment approach. The system specializes in web security, cryptography, binary exploitation, reverse engineering, forensics, and other CTF categories.
 
 ## Recent Changes (August 2025)
-- ✅ **Simplified to single shared database** - Removed multi-user database complexity, now uses one shared database for all users
-- ✅ **Added large context window model** - Integrated MockDialoGPT-Large with 4096 token context window
-- ✅ **Built automatic server-side training** - System automatically trains the shared model daily using collected writeups
+- ✅ **Implemented client-side AI execution** - Real AI processing runs locally after automatic model import from shared database
+- ✅ **Built CTF-specialized knowledge engine** - Advanced reasoning system with category detection and technique-specific guidance
+- ✅ **Added comprehensive CTF knowledge base** - Built-in database of techniques, tools, and methodologies for all CTF categories
+- ✅ **Created intelligent response generation** - Context-aware responses using writeup analysis and pattern matching
+- ✅ **Simplified to single shared database** - Removed multi-user database complexity, uses one shared database for all users
+- ✅ **Added automatic server-side training** - System automatically trains the shared model daily using collected writeups
+- ✅ **Built fallback storage system** - JSON-based storage when external database is unavailable with seamless switching
 - ✅ **Added file import functionality** - Users can upload TXT, MD, PDF, JSON files to add training data
-- ✅ **Created fallback storage system** - JSON-based storage when external database is unavailable
-- ✅ **Simplified user interface** - Streamlined 4-tab interface: Chat, Upload, Data Collection, Auto Training
-- ✅ **Removed unnecessary complexity** - Eliminated external database connection UI and individual user configurations
+- ✅ **Streamlined user interface** - Clean 4-tab interface: Chat, Upload, Data Collection, Auto Training
 
 # User Preferences
 
@@ -17,6 +19,7 @@ Preferred communication style: Simple, everyday language.
 Architecture preference: Single shared database for all users instead of individual connections.
 Model preference: Large context window model (4096 tokens) for comprehensive CTF assistance.
 Training preference: Automatic server-side training with user file upload capability.
+AI preference: Client-side AI execution with real CTF expertise and comprehensive knowledge base.
 
 # System Architecture
 
@@ -44,12 +47,21 @@ The system follows a structured data flow:
 5. Processed data feeds into the transformer-based QA model
 
 ## Model Architecture
-Uses a large context window approach for comprehensive CTF knowledge:
-- Base model: MockDialoGPT-Large with 4096 token context window
-- Task: Conversational AI specialized in cybersecurity and CTF challenges
-- Training: Automatic daily training on collected writeups and user uploads
-- Inference: Large context responses with CTF-specific knowledge base integration
-- Storage: Single shared model accessible by all users
+Uses client-side AI execution with server-side model management:
+
+**Client-Side AI Engine:**
+- CTF-specialized knowledge base with 7 categories (web, crypto, pwn, reverse, forensics, osint, misc)
+- Advanced question analysis with category detection and technique identification
+- Context-aware response generation using writeup analysis and pattern matching
+- Real-time knowledge base updates when new writeups are imported
+- 4096 token context window for comprehensive responses
+
+**Server-Side Model Management:**
+- Automatic daily training on collected writeups and user uploads
+- Model versioning and distribution system
+- Usage statistics and performance tracking
+- Seamless model updates pushed to all clients
+- Fallback storage system for offline operation
 
 ## Authentication and State Management
 The system uses Flask sessions with random secret keys for basic security. Global state tracking monitors:

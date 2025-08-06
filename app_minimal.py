@@ -16,6 +16,7 @@ from config import UPLOAD_CONFIG, SYSTEM_CONFIG, DATA_SOURCES
 from shared_db import shared_db
 from simple_data_collector import SimpleDataCollector
 from fallback_storage import fallback_storage
+from client_ai_engine import client_ai
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -163,8 +164,8 @@ class AutoTrainer:
                 time.sleep(5)
                 logger.info(f"Training progress: {(i+1)*20}%")
             
-            # Update model knowledge
-            mock_model.load_knowledge(writeups)
+            # Update client-side AI knowledge
+            client_ai.update_knowledge(writeups)
             
             # Save model metadata to database or fallback
             config_data = json.dumps({
@@ -224,8 +225,12 @@ def load_active_model():
             
         logger.info(f"Loading model: {model_data['name']} v{model_data['version']}")
         
-        # Load knowledge into mock model
-        mock_model.load_knowledge(writeups)
+        # Load knowledge into client-side AI
+        client_ai.update_knowledge(writeups)
+        
+        # Load model configuration
+        if model_data:
+            client_ai.load_model_from_server(model_data)
         
         model_loaded = True
         logger.info("Mock model loaded successfully")
@@ -263,7 +268,8 @@ def get_status():
         'auto_training_enabled': True,
         'last_training': last_training_check.isoformat(),
         'context_window': 4096,
-        'model_type': 'MockDialoGPT-Large-4K'
+        'model_type': client_ai.model_type,
+        'storage_mode': 'fallback' if use_fallback_storage else 'database'
     })
 
 @app.route('/api/chat', methods=['POST'])
@@ -281,8 +287,8 @@ def chat():
         
         start_time = time.time()
         
-        # Generate response using mock model
-        response = mock_model.generate_response(question)
+        # Generate response using client-side AI
+        response = client_ai.generate_ctf_response(question)
         
         response_time = time.time() - start_time
         
@@ -299,8 +305,8 @@ def chat():
         return jsonify({
             'response': response,
             'response_time': response_time,
-            'model_type': 'MockDialoGPT-Large-4K',
-            'context_window': 4096
+            'model_type': client_ai.model_type,
+            'context_window': client_ai.context_window
         })
         
     except Exception as e:
@@ -345,10 +351,10 @@ def upload_file():
                 category='imported',
                 difficulty='unknown'
             )
-            # Update model knowledge if loaded
+            # Update client-side AI knowledge if loaded
             if model_loaded:
                 writeups = fallback_storage.get_writeups(limit=100)
-                mock_model.load_knowledge(writeups)
+                client_ai.update_knowledge(writeups)
         else:
             writeup_id = shared_db.save_writeup(
                 title=title,
@@ -357,10 +363,10 @@ def upload_file():
                 category='imported',
                 difficulty='unknown'
             )
-            # Update model knowledge if loaded
+            # Update client-side AI knowledge if loaded
             if model_loaded:
                 writeups = shared_db.get_writeups(limit=100)
-                mock_model.load_knowledge(writeups)
+                client_ai.update_knowledge(writeups)
         
         # Clean up file
         os.remove(filepath)
@@ -412,13 +418,13 @@ def collect_data():
                 if writeup_id:
                     results.append(writeup_id)
         
-        # Update model knowledge if loaded
+        # Update client-side AI knowledge if loaded
         if model_loaded and results:
             if use_fallback_storage:
                 writeups = fallback_storage.get_writeups(limit=100)
             else:
                 writeups = shared_db.get_writeups(limit=100)
-            mock_model.load_knowledge(writeups)
+            client_ai.update_knowledge(writeups)
         
         return jsonify({
             'success': True,
@@ -437,6 +443,48 @@ def trigger_training():
         return jsonify({'success': True, 'message': 'Training started'})
     else:
         return jsonify({'error': 'Training already in progress'}), 400
+
+@app.route('/api/download-model', methods=['GET'])
+def download_model():
+    """Download the active model for client-side use"""
+    try:
+        if use_fallback_storage:
+            model_data = fallback_storage.get_active_model()
+        else:
+            model_data = shared_db.get_active_model()
+            
+        if not model_data:
+            return jsonify({'error': 'No active model available'}), 404
+        
+        # Prepare model data for client-side use
+        client_model_data = {
+            'id': model_data['id'],
+            'name': model_data['name'],
+            'version': model_data['version'],
+            'model_type': model_data['model_type'],
+            'config_data': model_data.get('config_data'),
+            'download_count': model_data.get('download_count', 0),
+            'created_at': model_data.get('created_at'),
+            'context_window': 4096
+        }
+        
+        # Update download count
+        if use_fallback_storage:
+            fallback_storage.update_model_usage(model_data['id'], 0)
+        else:
+            shared_db.update_model_usage(model_data['id'], 0)
+        
+        logger.info(f"Model downloaded: {model_data['name']} v{model_data['version']}")
+        
+        return jsonify({
+            'success': True,
+            'model': client_model_data,
+            'message': f'Model {model_data["name"]} v{model_data["version"]} downloaded successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Model download error: {e}")
+        return jsonify({'error': 'Failed to download model'}), 500
 
 def background_tasks():
     """Background thread for automatic tasks"""
@@ -499,8 +547,9 @@ if __name__ == '__main__':
     bg_thread.daemon = True
     bg_thread.start()
     
-    logger.info("Starting Minimal CTF AI System...")
-    logger.info(f"Using MockDialoGPT-Large with {mock_model.context_window} token context window")
+    logger.info("Starting CTF AI System with Client-Side AI...")
+    logger.info(f"Using {client_ai.model_type} with {client_ai.context_window} token context window")
+    logger.info(f"Storage mode: {'Fallback JSON' if use_fallback_storage else 'Database'}")
     
     app.run(
         host=SYSTEM_CONFIG['host'],

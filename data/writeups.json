@@ -1,1 +1,68 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "sql_injection_in_login_form",
+    "content": "Title: SQL Injection in Login Form\nCategory: web\nDifficulty: easy\n\nThis web challenge featured a classic SQL injection vulnerability in the login form. \n\nThe application used PHP with MySQL and didn't properly sanitize user input. By analyzing the source code, I found the vulnerable query:\n\n```sql\nSELECT * FROM users WHERE username='$username' AND password='$password'\n```\n\nI tested various payloads and found that the following worked:\n- Username: admin' OR '1'='1'-- \n- Password: anything\n\nThis bypassed the authentication because the injected SQL made the WHERE clause always true for the admin user. The query became:\n\n```sql\nSELECT * FROM users WHERE username='admin' OR '1'='1'-- ' AND password='anything'\n```\n\nThe flag was displayed after successful login: flag{sql_injection_basic_bypass}\n\nKey lessons:\n- Always use prepared statements\n- Never trust user input\n- Implement proper input validation\n- Use web application firewalls",
+    "source": "file_upload",
+    "url": null,
+    "category": "imported",
+    "tags": null,
+    "difficulty": "unknown",
+    "created_at": "2025-08-06T09:34:35.212710"
+  },
+  {
+    "id": 2,
+    "title": "xss_reflected_in_search_parameter",
+    "content": "Title: XSS Reflected in Search Parameter\nCategory: web\nDifficulty: medium\n\nFound a reflected XSS vulnerability in the search functionality of a web application.\n\nThe vulnerable endpoint was: /search?q=<user_input>\n\nThe application directly reflected the search term in the response without encoding:\n```html\n<p>Search results for: PAYLOAD_HERE</p>\n```\n\nI tested several XSS payloads:\n1. <script>alert('XSS')</script> - Blocked by basic filtering\n2. <img src=x onerror=alert('XSS')> - Worked!\n3. javascript:alert('XSS') - Also worked in href attributes\n\nThe successful payload was:\n```html\n<img src=x onerror=alert(document.cookie)>\n```\n\nThis executed JavaScript and displayed the session cookies. In a real attack, this could steal user sessions.\n\nFlag: flag{xss_reflected_cookie_theft}\n\nPrevention:\n- Always HTML encode output\n- Use Content Security Policy (CSP)\n- Implement input validation\n- Use HTTPOnly cookies",
+    "source": "file_upload",
+    "url": null,
+    "category": "imported",
+    "tags": null,
+    "difficulty": "unknown",
+    "created_at": "2025-08-06T09:34:35.220333"
+  },
+  {
+    "id": 3,
+    "title": "buffer_overflow_in_c_program",
+    "content": "Title: Buffer Overflow in C Program\nCategory: pwn\nDifficulty: hard\n\nThis pwn challenge involved a classic stack buffer overflow in a C program.\n\nFirst, I analyzed the binary:\n```bash\nfile challenge\nchecksec challenge\n```\n\nThe binary had no stack canaries and no ASLR, making exploitation easier.\n\nVulnerable code:\n```c\nchar buffer[64];\ngets(buffer);  // Vulnerable function\n```\n\nThe `gets()` function doesn't check buffer length, allowing overflow.\n\nExploitation steps:\n1. Found offset: 72 bytes to overwrite EIP\n2. Located system() function and \"/bin/sh\" string\n3. Crafted ROP chain for ret2libc attack\n\nFinal payload:\n```python\npayload = b'A' * 72          # Buffer + saved EBP\npayload += p32(system_addr)  # Return address\npayload += b'JUNK'           # Return address for system\npayload += p32(binsh_addr)   # Argument to system\n```\n\nThis spawned a shell and allowed reading the flag file.\n\nFlag: flag{buffer_overflow_ret2libc}\n\nTools used:\n- GDB for debugging\n- pwntools for exploitation\n- ROPgadget for finding gadgets",
+    "source": "file_upload",
+    "url": null,
+    "category": "imported",
+    "tags": null,
+    "difficulty": "unknown",
+    "created_at": "2025-08-06T09:34:35.228227"
+  },
+  {
+    "id": 4,
+    "title": "caesar_cipher_with_rot13",
+    "content": "Title: Caesar Cipher with ROT13\nCategory: crypto\nDifficulty: easy\n\nThis crypto challenge presented an encoded message that needed decryption.\n\nGiven ciphertext: \"synt{pnrfne_pvcure_vf_rnfl}\"\n\nI recognized this might be a Caesar cipher due to:\n- Preserved word structure\n- Common letter patterns\n- Format suggesting a flag\n\nI tried all possible shifts (1-25) and found that ROT13 (shift of 13) produced readable text:\n\nOriginal: synt{pnrfne_pvcure_vf_rnfl}\nROT13:    flag{caesar_cipher_is_easy}\n\nROT13 is a special case of Caesar cipher where each letter is shifted 13 positions. It's its own inverse - applying ROT13 twice returns the original text.\n\nPython solution:\n```python\nimport codecs\ncipher = \"synt{pnrfne_pvcure_vf_rnfl}\"\nflag = codecs.encode(cipher, 'rot_13')\nprint(flag)  # flag{caesar_cipher_is_easy}\n```\n\nThis challenge taught the importance of:\n- Trying simple ciphers first\n- Recognizing patterns in encoded text\n- Using automated tools for quick testing",
+    "source": "file_upload",
+    "url": null,
+    "category": "imported",
+    "tags": null,
+    "difficulty": "unknown",
+    "created_at": "2025-08-06T09:34:35.234478"
+  },
+  {
+    "id": 5,
+    "title": "rsa_with_small_exponent_attack",
+    "content": "Title: RSA with Small Exponent Attack\nCategory: crypto\nDifficulty: medium\n\nThis cryptography challenge involved breaking RSA encryption with a small public exponent.\n\nGiven:\n- n = 133337 (very small for demonstration)\n- e = 3 (small exponent)\n- c = 8027 (ciphertext)\n\nWhen the public exponent e is small and the message m is also small, we can sometimes decrypt without the private key.\n\nThe attack works when m^e < n, meaning no modular reduction occurred during encryption.\n\nI used the cube root attack:\n1. Calculate the eth root of the ciphertext\n2. Since e=3, calculate cube root of c\n3. If m^3 < n, then c = m^3 (no mod n)\n\nPython solution:\n```python\nimport gmpy2\n\nn = 133337\ne = 3\nc = 8027\n\n# Calculate cube root\nm = gmpy2.iroot(c, e)[0]\nprint(f\"Message: {m}\")\n\n# Convert to ASCII if needed\nflag = bytes.fromhex(hex(m)[2:]).decode()\nprint(f\"Flag: {flag}\")\n```\n\nThe cube root of 8027 is 20, which converts to ASCII as \"flag\".\n\nThis demonstrates why:\n- Use proper padding (OAEP)\n- Use larger exponents (65537 is standard)\n- Ensure message size relative to modulus",
+    "source": "file_upload",
+    "url": null,
+    "category": "imported",
+    "tags": null,
+    "difficulty": "unknown",
+    "created_at": "2025-08-06T09:34:35.254419"
+  },
+  {
+    "id": 6,
+    "title": "elf_binary_reverse_engineering",
+    "content": "Title: ELF Binary Reverse Engineering\nCategory: reverse\nDifficulty: medium\n\nThis reverse engineering challenge required analyzing a Linux ELF binary to extract the flag.\n\nInitial analysis:\n```bash\nfile challenge\nstrings challenge | grep flag\nhexdump -C challenge | grep -i flag\n```\n\nThe `strings` command revealed some interesting text but no clear flag. I used Ghidra for deeper analysis.\n\nIn Ghidra, I found the main function contained several checks:\n1. Command line argument validation\n2. String transformation operations  \n3. XOR operations with hardcoded keys\n\nKey function pseudo-code:\n```c\nvoid main(int argc, char *argv[]) {\n    if (argc != 2) return;\n    \n    char *input = argv[1];\n    if (strlen(input) != 24) return;\n    \n    // XOR each character with position-based key\n    for (int i = 0; i < 24; i++) {\n        input[i] ^= (0x42 + i);\n    }\n    \n    if (strcmp(input, \"expected_result\") == 0) {\n        printf(\"Correct! Flag: flag{%s}\n\", decoded_flag);\n    }\n}\n```\n\nI reversed the XOR operation to find the correct input:\n```python\nexpected = \"expected_result\"  # From Ghidra analysis\nflag_chars = []\n\nfor i in range(24):\n    original = ord(expected[i]) ^ (0x42 + i)\n    flag_chars.append(chr(original))\n\nprint(''.join(flag_chars))\n```\n\nFinal flag: flag{reverse_engineering_success}\n\nTools used:\n- Ghidra for static analysis\n- GDB for dynamic analysis\n- Python for crypto operations",
+    "source": "file_upload",
+    "url": null,
+    "category": "imported",
+    "tags": null,
+    "difficulty": "unknown",
+    "created_at": "2025-08-06T09:34:35.260271"
+  }
+]
